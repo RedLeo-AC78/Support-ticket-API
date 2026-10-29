@@ -31,6 +31,7 @@ export function authenticate(db: PrismaClient, jwt: JwtService): RequestHandler 
     if (!session || session.userId !== claims.userId || session.accessHash !== digest(match[1]) ||
         session.revokedAt || session.expiresAt <= new Date() || session.accessExpiresAt <= new Date() || session.user.status !== 'ACTIVE') throw invalid();
     res.locals.user = session.user;
+    res.locals.sessionId = session.id;
     next();
   };
 }

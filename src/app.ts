@@ -6,6 +6,8 @@ import { authenticate, authRouter, requirePermission, ticketScope, publicUser } 
 import { jwtService } from './jwt.js';
 import { createMailer, type Mailer } from './mail.js';
 import { acceptInvitationRouter, usersInvitationRouter } from './invitations.js';
+import { accountStatusRouter } from './account-status.js';
+import { passwordResetRouter } from './password-reset.js';
 
 function textField(value: unknown, field: string, max: number): string {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > max) {
@@ -31,10 +33,14 @@ export function createApp(db: PrismaClient, secret = process.env.JWT_SECRET, mai
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next(); });
   app.use('/auth', authRouter(db, jwt));
   app.use('/auth', acceptInvitationRouter(db));
+  const resets = passwordResetRouter(db, mailer);
+  app.locals.waitForBackgroundTasks = resets.drain;
+  app.use('/auth', resets.router);
   app.use('/tickets', authenticate(db, jwt));
   app.get('/users', authenticate(db, jwt), requirePermission('users:list'), async (_req, res) => {
     res.json(await db.user.findMany({ select: publicUser, orderBy: { id: 'asc' } }));
   });
+  app.use('/users', accountStatusRouter(db, jwt));
   app.use('/users', usersInvitationRouter(db, jwt, mailer));
 
   app.post('/tickets', requirePermission('tickets:create'), async (req, res) => {

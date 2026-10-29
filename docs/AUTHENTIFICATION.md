@@ -1,8 +1,10 @@
 # Authentification — progression par commits
 
+Le guide autonome du premier lot est maintenant disponible dans [LOT1.md](LOT1.md) : installation, modèles, rôles, hachage et création du premier Super Admin.
+
 ## Lot 1 : modèles, mots de passe et premier super administrateur
 
-Les lots 1 à 3 sont implémentés : données, connexion JWT, rotation, permissions et invitations. Voir [LOT2.md](LOT2.md) pour la connexion et [LOT3.md](LOT3.md) pour les invitations et Brevo. Les descriptions au futur ci-dessous expliquent la conception initiale ; le suivi courant se trouve dans CONSIGNES.md.
+Les lots 1 à 4 sont implémentés : données, connexion JWT, rotation, permissions, invitations, gestion d'état et reset. Voir [LOT2.md](LOT2.md), [LOT3.md](LOT3.md) et [LOT4.md](LOT4.md). Les descriptions au futur ci-dessous expliquent la conception initiale ; le suivi courant se trouve dans CONSIGNES.md. Il reste la revue finale du lot 5.
 
 ### Pourquoi ces tables ?
 

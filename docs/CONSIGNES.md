@@ -1,6 +1,6 @@
 # Conformité aux consignes du professeur
 
-État après le lot 3 : connexion, JWT, rotation, permissions, invitations et acceptation implémentés et testés sur PostgreSQL. Le transport Brevo est implémenté et testé avec un fournisseur simulé ; la réception réelle nécessite les identifiants et l'expéditeur vérifié de votre compte. Le lot 4 reste à réaliser. Voir [LOT2.md](LOT2.md) et [LOT3.md](LOT3.md).
+État après le lot 4 : toutes les fonctionnalités ci-dessous sont implémentées et testées sur PostgreSQL avec emails simulés. La réception réelle d'une invitation Brevo a également été confirmée par l'utilisateur. Le reset réel reste à essayer avec lui. Il reste la revue finale et le guide de présentation. Voir [LOT2.md](LOT2.md), [LOT3.md](LOT3.md) et [LOT4.md](LOT4.md).
 
 | Consigne | Décision et état |
 |---|---|
@@ -13,9 +13,9 @@
 | Déconnexion et révocation | Session révocable ; route au lot 2 |
 | SUPER_ADMIN, ADMIN, AGENT, USER | Quatre rôles ajoutés au schéma |
 | Restrictions par permissions | Politique centralisée prête ; application HTTP au lot 2 |
-| Demande de reset par email | Réponse générique, fournisseur email ; lot 4 |
-| Reset sécurisé à usage unique | Modèle prêt ; consommation atomique au lot 4 |
-| Désactivation et réactivation | États ajoutés ; routes et révocation au lot 4 |
+| Demande de reset par email | POST /auth/forgot-password, réponse générique, limite de débit ; terminé |
+| Reset sécurisé à usage unique | POST /auth/reset-password, transaction, expiration, révocation ; terminé |
+| Désactivation et réactivation | PATCH /users/:id/status, réservé à SUPER_ADMIN, protection du dernier compte actif ; terminé |
 | Resend ou alternative | Brevo intégré via fetch natif ; envoi réel à configurer dans .env |
 
 ## Matrice proposée
