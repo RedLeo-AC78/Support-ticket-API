@@ -1,6 +1,8 @@
 # Support Ticket — projet de classe
 *Groupe : Adam Cheria / Jacques OWONE*
 
+> Extension authentification en cours, par lots : le lot 1 ajoute les modèles de comptes et le script de création du premier super administrateur. Les routes de tickets restent publiques jusqu'au lot 2. Voir [le guide pédagogique](docs/AUTHENTIFICATION.md) pour la migration et les explications.
+
 API REST en **Node.js, Express, TypeScript et PostgreSQL avec Prisma**. Pas de framework frontend ni de bibliothèque de validation. L'adaptateur `@prisma/adapter-pg` relie Prisma 7 à PostgreSQL. Les tests utilisent le module intégré `node:test`.
 
 ## Installation
