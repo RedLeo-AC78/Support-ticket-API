@@ -1,7 +1,7 @@
 # Support Ticket — projet de classe
 *Groupe : Adam Cheria / Jacques OWONE*
 
-> Extension authentification en cours, par lots : le lot 1 ajoute les modèles de comptes et le script de création du premier super administrateur. Les routes de tickets restent publiques jusqu'au lot 2. Voir [le guide pédagogique](docs/AUTHENTIFICATION.md) pour la migration et les explications.
+> Lots 1 et 2 disponibles : comptes, connexion JWT, rotation des refresh tokens et permissions. Les tickets nécessitent maintenant une authentification. Commencer par [le guide de lancement et les exemples du lot 2](docs/LOT2.md). Invitations et reset par email arrivent dans les prochains lots.
 
 API REST en **Node.js, Express, TypeScript et PostgreSQL avec Prisma**. Pas de framework frontend ni de bibliothèque de validation. L'adaptateur `@prisma/adapter-pg` relie Prisma 7 à PostgreSQL. Les tests utilisent le module intégré `node:test`.
 
@@ -26,6 +26,7 @@ Modifier `DATABASE_URL` dans `.env` avec votre utilisateur, mot de passe, hôte 
 
 ```powershell
 npm run db:migrate
+npm run auth:setup
 npm run build
 npm start
 ```
@@ -47,13 +48,13 @@ Création : `title` (1–150 caractères) et `description` (1–5000 caractères
 
 Statuts : `OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`. Toute transition entre ces statuts est autorisée, y compris la réouverture. Un ticket possède aussi `id`, `createdAt` et `updatedAt`, gérés par PostgreSQL/Prisma.
 
-Exemples PowerShell :
+Exemples PowerShell (après connexion selon [le guide du lot 2](docs/LOT2.md), qui définit `$headers`) :
 
 ```powershell
-$ticket = Invoke-RestMethod -Method Post -Uri http://localhost:3000/tickets -ContentType 'application/json' -Body '{"title":"Connexion impossible","description":"Je ne peux pas acceder a mon compte."}'
-Invoke-RestMethod http://localhost:3000/tickets
-Invoke-RestMethod "http://localhost:3000/tickets/$($ticket.id)"
-Invoke-RestMethod -Method Patch -Uri "http://localhost:3000/tickets/$($ticket.id)/status" -ContentType 'application/json' -Body '{"status":"IN_PROGRESS"}'
+$ticket = Invoke-RestMethod -Method Post -Uri http://localhost:3000/tickets -Headers $headers -ContentType 'application/json' -Body '{"title":"Connexion impossible","description":"Je ne peux pas acceder a mon compte."}'
+Invoke-RestMethod http://localhost:3000/tickets -Headers $headers
+Invoke-RestMethod "http://localhost:3000/tickets/$($ticket.id)" -Headers $headers
+Invoke-RestMethod -Method Patch -Uri "http://localhost:3000/tickets/$($ticket.id)/status" -Headers $headers -ContentType 'application/json' -Body '{"status":"IN_PROGRESS"}'
 ```
 
 Les erreurs sont renvoyées en JSON : `{"error":"Ticket introuvable."}`. Codes : `400` (entrée invalide), `404` (ticket ou route introuvable), `413` (requête trop volumineuse), `500` (erreur interne).
@@ -72,6 +73,6 @@ npm test
 
 Les tests vérifient les quatre opérations, les statuts et les erreurs de saisie. Ils ne remplacent pas un test PostgreSQL : après migration, exécuter les exemples ci-dessus, redémarrer le serveur puis relire le ticket pour vérifier la persistance.
 
-Le périmètre est celui du devoir : API sans interface graphique, authentification ni suppression. La liste est complète et non paginée, adaptée à un petit projet de classe.
+API sans interface graphique ni suppression, avec authentification et permissions. La liste est filtrée selon les droits et non paginée, adaptée à un petit projet de classe.
 
 Référence technique : [configuration du client Prisma](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/introduction).

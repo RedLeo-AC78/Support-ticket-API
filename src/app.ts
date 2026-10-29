@@ -1,17 +1,9 @@
 import express, { type ErrorRequestHandler } from 'express';
 import { Prisma, type PrismaClient } from './generated/prisma/client.js';
 import { TicketStatus } from './generated/prisma/enums.js';
-
-class HttpError extends Error {
-  constructor(public status: number, message: string) { super(message); }
-}
-
-function objectBody(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new HttpError(400, 'Le corps doit être un objet JSON.');
-  }
-  return value as Record<string, unknown>;
-}
+import { HttpError, objectBody } from './security.js';
+import { authenticate, authRouter, requirePermission, ticketScope, publicUser } from './auth.js';
+import { jwtService } from './jwt.js';
 
 function textField(value: unknown, field: string, max: number): string {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > max) {
@@ -20,7 +12,8 @@ function textField(value: unknown, field: string, max: number): string {
   return value.trim();
 }
 
-function ticketId(value: string): number {
+function ticketId(value: string | string[]): number {
+  if (typeof value !== 'string') throw new HttpError(400, 'ID invalide.');
   const id = Number(value);
   if (!/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(id) || id > 2147483647) {
     throw new HttpError(400, 'ID invalide : entier positif attendu.');
@@ -28,36 +21,43 @@ function ticketId(value: string): number {
   return id;
 }
 
-export function createApp(db: Pick<PrismaClient, 'ticket'>) {
+export function createApp(db: PrismaClient, secret = process.env.JWT_SECRET) {
+  const jwt = jwtService(secret);
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '64kb' }));
+  app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next(); });
+  app.use('/auth', authRouter(db, jwt));
+  app.use('/tickets', authenticate(db, jwt));
+  app.get('/users', authenticate(db, jwt), requirePermission('users:list'), async (_req, res) => {
+    res.json(await db.user.findMany({ select: publicUser, orderBy: { id: 'asc' } }));
+  });
 
-  app.post('/tickets', async (req, res) => {
+  app.post('/tickets', requirePermission('tickets:create'), async (req, res) => {
     const body = objectBody(req.body);
     const title = textField(body.title, 'title', 150);
     const description = textField(body.description, 'description', 5000);
-    const ticket = await db.ticket.create({ data: { title, description } });
+    const ticket = await db.ticket.create({ data: { title, description, ownerId: res.locals.user.id } });
     res.location(`/tickets/${ticket.id}`).status(201).json(ticket);
   });
 
   app.get('/tickets', async (_req, res) => {
-    res.json(await db.ticket.findMany({ orderBy: { id: 'desc' } }));
+    res.json(await db.ticket.findMany({ where: ticketScope(res.locals.user), orderBy: { id: 'desc' } }));
   });
 
   app.get('/tickets/:id', async (req, res) => {
-    const ticket = await db.ticket.findUnique({ where: { id: ticketId(req.params.id) } });
+    const ticket = await db.ticket.findFirst({ where: { id: ticketId(req.params.id), ...ticketScope(res.locals.user) } });
     if (!ticket) throw new HttpError(404, 'Ticket introuvable.');
     res.json(ticket);
   });
 
-  app.patch('/tickets/:id/status', async (req, res) => {
+  app.patch('/tickets/:id/status', requirePermission('tickets:update-status'), async (req, res) => {
     const id = ticketId(req.params.id);
     const body = objectBody(req.body);
     if (typeof body.status !== 'string' || !Object.values(TicketStatus).includes(body.status as TicketStatus)) {
       throw new HttpError(400, 'status doit être OPEN, IN_PROGRESS, RESOLVED ou CLOSED.');
     }
-    res.json(await db.ticket.update({ where: { id }, data: { status: body.status as TicketStatus } }));
+    res.json(await db.ticket.update({ where: { ...ticketScope(res.locals.user), id }, data: { status: body.status as TicketStatus } }));
   });
 
   app.use((_req, _res, next) => next(new HttpError(404, 'Route introuvable.')));

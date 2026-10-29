@@ -2,7 +2,7 @@
 
 ## Lot 1 : modèles, mots de passe et premier super administrateur
 
-Ce lot prépare les données. Les routes des tickets restent pour l'instant publiques : les protections arriveront dans le lot suivant. Les tables de sessions et de réinitialisation sont prêtes, mais aucune route de connexion ou d'envoi d'email n'est encore activée.
+Le lot 1 prépare les données. Le lot 2 est maintenant implémenté : connexion JWT, rotation, déconnexion et protection des tickets. Voir [LOT2.md](LOT2.md) pour le lancement et les exemples. Les emails et invitations ne sont pas encore activés. Les descriptions au futur ci-dessous expliquent la conception initiale et les lots restants.
 
 ### Pourquoi ces tables ?
 
@@ -16,7 +16,7 @@ Ce lot prépare les données. Les routes des tickets restent pour l'instant publ
 
 `Ticket.ownerId` est nullable pour préserver les tickets déjà créés. La future API associera chaque nouveau ticket au compte connecté. Les tickets historiques sans propriétaire seront réservés aux administrateurs.
 
-Les rôles sont USER, AGENT, ADMIN et SUPER_ADMIN. Seul SUPER_ADMIN crée les comptes, par invitation. ADMIN ne crée donc pas d'utilisateurs. La politique prévue est centralisée dans `src/permissions.ts` ; elle n'est pas encore appliquée aux routes. Voir [le suivi des consignes](CONSIGNES.md) pour la matrice des droits et l'état exact des fonctionnalités.
+Les rôles sont USER, AGENT, ADMIN et SUPER_ADMIN. Seul SUPER_ADMIN créera les comptes, par invitation au lot 3. ADMIN ne crée donc pas d'utilisateurs. La politique centralisée dans `src/permissions.ts` est appliquée aux routes du lot 2. Voir [le suivi des consignes](CONSIGNES.md) pour la matrice des droits.
 
 Un compte invité possède un email et un rôle, mais aucun mot de passe : `passwordHash` est nullable. Il passe de INVITED à ACTIVE quand le destinataire accepte son invitation et choisit son mot de passe. DISABLED interdit connexion et utilisation des tokens. Réactiver un compte ne devra pas réactiver ses anciennes sessions. Un compte sans mot de passe doit revenir à INVITED, jamais directement à ACTIVE.
 

@@ -27,7 +27,8 @@ try {
   const passwordHash = await hashPassword(password);
   await db.$transaction(async tx => {
     // Deux lancements simultanés ne doivent pas créer deux comptes d'amorçage.
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(78234901)`;
+    // Le verrou renvoie void : ne sélectionner que la constante entière pour Prisma.
+    await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(78234901)`;
     if (await tx.user.findFirst({ where: { role: 'SUPER_ADMIN' } })) throw new Error('Un super administrateur existe déjà. Aucun compte modifié.');
     if (await tx.user.findUnique({ where: { email } })) throw new Error('Cet email est déjà utilisé. Aucun compte modifié.');
     await tx.user.create({ data: { email, passwordHash, role: 'SUPER_ADMIN', status: 'ACTIVE' } });

@@ -1,6 +1,6 @@
 # Conformité aux consignes du professeur
 
-État après adaptation du lot 1 : modèles et politique de permissions prêts, authentification HTTP non encore implémentée. Les tests de politique ne prouvent pas encore la protection des routes : celle-ci sera vérifiée dans les lots suivants.
+État après le lot 2 : authentification HTTP, JWT, rotation, déconnexion et permissions implémentés et testés sur PostgreSQL. Les lignes marquées « lot 2 » ci-dessous sont terminées ; les lots 3 et 4 restent à réaliser. Voir [LOT2.md](LOT2.md).
 
 | Consigne | Décision et état |
 |---|---|
