@@ -3,20 +3,26 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
+    "auth:setup": "node scripts/setup-jwt.mjs",
+    "test:db": "npm run build && node --env-file=.env scripts/test-db.mjs",
     "generate": "prisma generate",
     "build": "npm run generate && tsc",
     "start": "node --env-file=.env dist/server.js",
     "dev": "npm run build && node --env-file=.env --watch dist/server.js",
     "db:migrate": "prisma migrate deploy",
     "db:dev": "prisma migrate dev",
+    "admin:create": "npm run build && node --env-file=.env dist/create-admin.js",
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "jose": "^6.2.14"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

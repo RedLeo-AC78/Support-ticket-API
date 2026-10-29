@@ -23,4 +23,69 @@ model Ticket {
   status      TicketStatus @default(OPEN)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  ownerId     Int?
+  owner       User?        @relation(fields: [ownerId], references: [id])
+  @@index([ownerId])
+}
+
+enum Role {
+  USER
+  AGENT
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AccountStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique @db.VarChar(254)
+  passwordHash String?
+  role Role @default(USER)
+  status AccountStatus @default(INVITED)
+  createdAt DateTime @default(now())
+  tickets Ticket[]
+  sessions Session[]
+  resets PasswordReset[]
+  invitations Invitation[]
+}
+
+model Invitation {
+  hash String @id
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  @@index([userId])
+}
+
+model Session {
+  id String @id @default(uuid())
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessHash String @unique
+  accessExpiresAt DateTime
+  expiresAt DateTime
+  revokedAt DateTime?
+  refreshTokens RefreshToken[]
+  @@index([userId])
+}
+
+model RefreshToken {
+  hash String @id
+  sessionId String
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  usedAt DateTime?
+  @@index([sessionId])
+}
+
+model PasswordReset {
+  hash String @id
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  @@index([userId])
 }

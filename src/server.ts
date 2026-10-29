@@ -9,14 +9,19 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT i
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString, connectionTimeoutMillis: 5000 }) });
 await db.$connect();
-const server = createApp(db).listen(port, () => console.log(`API disponible : http://localhost:${port}/tickets`));
+const app = createApp(db);
+const server = app.listen(port, () => console.log(`API disponible : http://localhost:${port}/tickets`));
 let stopping = false;
 function shutdown() {
   if (stopping) return;
   stopping = true;
   const timeout = setTimeout(() => process.exit(1), 10000);
   timeout.unref();
-  server.close(() => { void db.$disconnect().then(() => { clearTimeout(timeout); }); });
+  server.close(() => { void (async () => {
+    await app.locals.waitForBackgroundTasks();
+    await db.$disconnect();
+    clearTimeout(timeout);
+  })().catch(() => { process.exitCode = 1; }); });
 }
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
