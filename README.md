@@ -1,78 +1,91 @@
 # Support Ticket — projet de classe
 *Groupe : Adam Cheria / Jacques OWONE*
 
-> Lots 1 à 4 disponibles : comptes, JWT, rotation, permissions, invitations, désactivation/réactivation et reset par email. Guides : [fondations et premier Super Admin](docs/LOT1.md), [connexion](docs/LOT2.md), [invitations et Brevo](docs/LOT3.md), [gestion des comptes et mot de passe oublié](docs/LOT4.md). Il reste la revue finale et le guide de présentation.
+API REST de support en **Node.js, Express, TypeScript et PostgreSQL avec Prisma**. Elle gère les tickets, les comptes sur invitation, les quatre rôles, les sessions JWT et la récupération des mots de passe. Aucune inscription publique ni interface graphique.
 
-API REST en **Node.js, Express, TypeScript et PostgreSQL avec Prisma**. Pas de framework frontend ni de bibliothèque de validation. L'adaptateur `@prisma/adapter-pg` relie Prisma 7 à PostgreSQL. Les tests utilisent le module intégré `node:test`.
+`jose` signe et vérifie les JWT ; `node:crypto` protège les mots de passe et génère les codes. Brevo envoie les emails via `fetch`, intégré à Node.js. Les tests utilisent `node:test`.
 
-## Installation
+## Installation sur une nouvelle machine
 
-Prérequis : Node.js 22.12+ (ou version ultérieure compatible avec Prisma 7), npm et un serveur PostgreSQL en fonctionnement.
+Prérequis : Node.js compatible avec Prisma 7 (22.12+ dans la branche 22), npm et PostgreSQL en fonctionnement. Créer une base `support_ticket`, par exemple dans pgAdmin.
 
-Dans ce dossier :
+Dans le dossier du projet :
 
 ```powershell
-npm install
+npm.cmd ci
+```
+
+Uniquement si `.env` n'existe pas encore :
+
+```powershell
 Copy-Item .env.example .env
 ```
 
-Créer une base `support_ticket` avec votre outil PostgreSQL, par exemple dans psql :
-
-```sql
-CREATE DATABASE support_ticket;
-```
-
-Modifier `DATABASE_URL` dans `.env` avec votre utilisateur, mot de passe, hôte et port PostgreSQL. Encoder les caractères spéciaux du mot de passe dans l'URL. Puis :
+Renseigner DATABASE_URL dans `.env` avec les identifiants PostgreSQL. Ne jamais publier ce fichier. Puis :
 
 ```powershell
-npm run db:migrate
-npm run auth:setup
-npm run build
-npm start
+npm.cmd run db:migrate
+npm.cmd run auth:setup
+npm.cmd run admin:create
+npm.cmd run build
+npm.cmd start
 ```
 
-L'API écoute sur `http://localhost:3000`. `PORT` est configurable dans `.env`.
+`admin:create` sert uniquement au premier Super Admin ; sauter cette commande si le compte existe déjà. L'API écoute sur `http://localhost:3000`, configurable avec PORT. Un navigateur ouvrant directement `/tickets` reçoit 401 : il faut joindre un access token.
 
-Pendant le développement, `npm run dev` compile puis surveille le JavaScript compilé. Après une modification TypeScript, exécuter `npm run build` dans un second terminal pour recompiler et déclencher le redémarrage. Après une modification du schéma, utiliser `npm run db:dev -- --name description_du_changement`, puis recompiler.
+Pour envoyer réellement des emails, configurer Brevo selon [LOT3.md](docs/LOT3.md). Sans configuration, le mode local écrit des emails de test dans `work/mail-outbox` ; il n'envoie rien.
+
+## Guides
+
+| Guide | Contenu |
+|---|---|
+| [Lot 1](docs/LOT1.md) | Installation, modèles, hachage, premier Super Admin |
+| [Lot 2](docs/LOT2.md) | Connexion, JWT, refresh, déconnexion et tickets |
+| [Lot 3](docs/LOT3.md) | Invitations, acceptation et configuration Brevo |
+| [Lot 4](docs/LOT4.md) | Désactivation/réactivation et reset par email |
+| [Lot 5](docs/LOT5.md) | Revue finale, démonstration et préparation de l'oral |
+| [Consignes](docs/CONSIGNES.md) | Correspondance des exigences et permissions |
+| [Authentification](docs/AUTHENTIFICATION.md) | Vue d'ensemble des parcours et protections |
 
 ## Routes
 
-| Méthode | URL | Rôle | Succès |
-|---|---|---|---|
-| POST | `/tickets` | Créer un ticket | 201 |
-| GET | `/tickets` | Lister tous les tickets, plus récents en premier | 200 |
-| GET | `/tickets/:id` | Récupérer un ticket par ID | 200 |
-| PATCH | `/tickets/:id/status` | Modifier son statut | 200 |
+| Méthode | URL | Accès / fonction |
+|---|---|---|
+| POST | `/auth/login` | Email et mot de passe d'un compte actif |
+| POST | `/auth/refresh` | Refresh token ; rotation des deux tokens |
+| POST | `/auth/logout` | Refresh token ; révocation de sa session |
+| GET | `/auth/me` | Access token ; compte connecté sans secrets |
+| POST | `/users` | SUPER_ADMIN ; création et invitation |
+| GET | `/users` | SUPER_ADMIN ou ADMIN ; liste sans secrets |
+| POST | `/users/:id/invitation` | SUPER_ADMIN ; renvoi d'invitation |
+| POST | `/auth/accept-invitation` | Code valide ; choix du mot de passe |
+| PATCH | `/users/:id/status` | SUPER_ADMIN ; désactivation/réactivation |
+| POST | `/auth/forgot-password` | Email ; réponse générique |
+| POST | `/auth/reset-password` | Code valide et nouveau mot de passe |
+| POST | `/tickets` | Compte connecté ; propriétaire imposé par le serveur |
+| GET | `/tickets` | Tickets visibles selon le rôle, plus récents en premier |
+| GET | `/tickets/:id` | Ticket visible selon le rôle et le propriétaire |
+| PATCH | `/tickets/:id/status` | SUPER_ADMIN, ADMIN ou AGENT selon la visibilité |
 
-Création : `title` (1–150 caractères) et `description` (1–5000 caractères) sont obligatoires. Les espaces de début et de fin sont supprimés. Le statut initial est toujours `OPEN`. Les propriétés supplémentaires ne sont pas enregistrées.
+Un USER voit seulement ses propres tickets. Un AGENT traite les tickets ayant un propriétaire ; ADMIN et SUPER_ADMIN voient aussi les tickets historiques sans propriétaire.
 
-Statuts : `OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`. Toute transition entre ces statuts est autorisée, y compris la réouverture. Un ticket possède aussi `id`, `createdAt` et `updatedAt`, gérés par PostgreSQL/Prisma.
+Les tickets demandent title (1–150 caractères) et description (1–5000 caractères), après suppression des espaces de début et fin. Leur statut initial est OPEN. Les statuts possibles sont OPEN, IN_PROGRESS, RESOLVED et CLOSED ; la réouverture est autorisée. Le client ne choisit pas ownerId.
 
-Exemples PowerShell (après connexion selon [le guide du lot 2](docs/LOT2.md), qui définit `$headers`) :
+Erreurs JSON : 400 saisie invalide, 401 authentification refusée, 403 permission insuffisante, 404 ressource absente ou non visible, 409 conflit, 413 requête trop volumineuse, 429 trop de tentatives, 500 erreur interne, 503 file email saturée.
 
-```powershell
-$ticket = Invoke-RestMethod -Method Post -Uri http://localhost:3000/tickets -Headers $headers -ContentType 'application/json' -Body '{"title":"Connexion impossible","description":"Je ne peux pas acceder a mon compte."}'
-Invoke-RestMethod http://localhost:3000/tickets -Headers $headers
-Invoke-RestMethod "http://localhost:3000/tickets/$($ticket.id)" -Headers $headers
-Invoke-RestMethod -Method Patch -Uri "http://localhost:3000/tickets/$($ticket.id)/status" -Headers $headers -ContentType 'application/json' -Body '{"status":"IN_PROGRESS"}'
-```
-
-Les erreurs sont renvoyées en JSON : `{"error":"Ticket introuvable."}`. Codes : `400` (entrée invalide), `404` (ticket ou route introuvable), `413` (requête trop volumineuse), `500` (erreur interne).
-
-## Structure et vérification
-
-- `src/app.ts` : routes Express, validation et gestion centralisée des erreurs.
-- `src/server.ts` : connexion Prisma/PostgreSQL et démarrage du serveur.
-- `prisma/schema.prisma` : modèle de données.
-- `prisma/migrations/` : migration SQL initiale versionnée.
-- `tests/api.test.mjs` : tests HTTP avec dépôt simulé, sans base nécessaire.
+## Tests et développement
 
 ```powershell
-npm test
+npm.cmd test
+npm.cmd run test:db
 ```
 
-Les tests vérifient les quatre opérations, les statuts et les erreurs de saisie. Ils ne remplacent pas un test PostgreSQL : après migration, exécuter les exemples ci-dessus, redémarrer le serveur puis relire le ticket pour vérifier la persistance.
+La première commande compile et exécute les tests sans PostgreSQL ; les deux scénarios PostgreSQL sont ignorés dans cette commande. La seconde les exécute sur des schémas temporaires supprimés ensuite. Elle utilise DATABASE_URL et nécessite le droit de créer des schémas, mais ne modifie pas les comptes et tickets réels. Les emails sont simulés ; les messages d'échec email des scénarios de panne sont attendus.
 
-API sans interface graphique ni suppression, avec authentification et permissions. La liste est filtrée selon les droits et non paginée, adaptée à un petit projet de classe.
+`npm.cmd run dev` compile puis surveille le JavaScript compilé. Après une modification TypeScript, lancer `npm.cmd run build` dans un second terminal. Après un changement de schéma, créer une migration avec `npm.cmd run db:dev -- --name nom_du_changement`, puis recompiler.
 
-Référence technique : [configuration du client Prisma](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/introduction).
+Les migrations existantes sont versionnées et ne doivent pas être réécrites après application. Les secrets `.env`, dépendances, fichiers générés et emails locaux sont exclus de Git.
+
+## Limites du projet
+
+API de classe, sans interface graphique ni suppression. Listes non paginées, limites de débit et file email en mémoire pour une instance, pas de nettoyage périodique des sessions expirées. Une mise en production demanderait notamment HTTPS, une file email durable, supervision, sauvegardes et une stratégie adaptée aux cookies si une interface navigateur est ajoutée. Voir les détails pédagogiques des lots 2 à 5.
