@@ -1,12 +1,12 @@
 # Conformité aux consignes du professeur
 
-État après le lot 2 : authentification HTTP, JWT, rotation, déconnexion et permissions implémentés et testés sur PostgreSQL. Les lignes marquées « lot 2 » ci-dessous sont terminées ; les lots 3 et 4 restent à réaliser. Voir [LOT2.md](LOT2.md).
+État après le lot 3 : connexion, JWT, rotation, permissions, invitations et acceptation implémentés et testés sur PostgreSQL. Le transport Brevo est implémenté et testé avec un fournisseur simulé ; la réception réelle nécessite les identifiants et l'expéditeur vérifié de votre compte. Le lot 4 reste à réaliser. Voir [LOT2.md](LOT2.md) et [LOT3.md](LOT3.md).
 
 | Consigne | Décision et état |
 |---|---|
-| Création par Super Admin, sans inscription publique | Réservée à SUPER_ADMIN ; route à faire au lot 3 |
-| Invitation par email | Modèle Invitation ajouté ; envoi à faire au lot 3 |
-| Acceptation et choix du mot de passe | Compte INVITED sans mot de passe ; route à faire au lot 3 |
+| Création par Super Admin, sans inscription publique | POST /users, réservé à SUPER_ADMIN ; terminé |
+| Invitation par email | Mode local et transport Brevo ; renvoi disponible ; terminé, compte fournisseur à configurer |
+| Acceptation et choix du mot de passe | POST /auth/accept-invitation ; activation atomique ; terminé |
 | Connexion email/mot de passe | Hachage prêt ; route à faire au lot 2 |
 | Access tokens JWT et refresh tokens | JWT signé pour l'accès, secret opaque pour le refresh ; lot 2 |
 | Renouvellement et rotation | Modèles prêts ; transaction et détection de rejeu au lot 2 |
@@ -16,7 +16,7 @@
 | Demande de reset par email | Réponse générique, fournisseur email ; lot 4 |
 | Reset sécurisé à usage unique | Modèle prêt ; consommation atomique au lot 4 |
 | Désactivation et réactivation | États ajoutés ; routes et révocation au lot 4 |
-| Resend ou alternative | Fournisseur à configurer au lot 3 ; Brevo proposé |
+| Resend ou alternative | Brevo intégré via fetch natif ; envoi réel à configurer dans .env |
 
 ## Matrice proposée
 

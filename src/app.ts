@@ -4,6 +4,8 @@ import { TicketStatus } from './generated/prisma/enums.js';
 import { HttpError, objectBody } from './security.js';
 import { authenticate, authRouter, requirePermission, ticketScope, publicUser } from './auth.js';
 import { jwtService } from './jwt.js';
+import { createMailer, type Mailer } from './mail.js';
+import { acceptInvitationRouter, usersInvitationRouter } from './invitations.js';
 
 function textField(value: unknown, field: string, max: number): string {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > max) {
@@ -21,17 +23,19 @@ function ticketId(value: string | string[]): number {
   return id;
 }
 
-export function createApp(db: PrismaClient, secret = process.env.JWT_SECRET) {
+export function createApp(db: PrismaClient, secret = process.env.JWT_SECRET, mailer: Mailer = createMailer()) {
   const jwt = jwtService(secret);
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '64kb' }));
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next(); });
   app.use('/auth', authRouter(db, jwt));
+  app.use('/auth', acceptInvitationRouter(db));
   app.use('/tickets', authenticate(db, jwt));
   app.get('/users', authenticate(db, jwt), requirePermission('users:list'), async (_req, res) => {
     res.json(await db.user.findMany({ select: publicUser, orderBy: { id: 'asc' } }));
   });
+  app.use('/users', usersInvitationRouter(db, jwt, mailer));
 
   app.post('/tickets', requirePermission('tickets:create'), async (req, res) => {
     const body = objectBody(req.body);
@@ -64,6 +68,8 @@ export function createApp(db: PrismaClient, secret = process.env.JWT_SECRET) {
   const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     if (error instanceof HttpError) {
       res.status(error.status).json({ error: error.message });
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      res.status(409).json({ error: 'Cette adresse email est déjà utilisée.' });
     } else if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       res.status(404).json({ error: 'Ticket introuvable.' });
     } else if (error.type === 'entity.parse.failed') {

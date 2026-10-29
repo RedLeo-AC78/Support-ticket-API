@@ -1,7 +1,7 @@
 # Support Ticket — projet de classe
 *Groupe : Adam Cheria / Jacques OWONE*
 
-> Lots 1 et 2 disponibles : comptes, connexion JWT, rotation des refresh tokens et permissions. Les tickets nécessitent maintenant une authentification. Commencer par [le guide de lancement et les exemples du lot 2](docs/LOT2.md). Invitations et reset par email arrivent dans les prochains lots.
+> Lots 1 à 3 disponibles : comptes, JWT, rotation, permissions et invitations par email. Commencer par [le guide de connexion du lot 2](docs/LOT2.md), puis [les invitations et la configuration Brevo](docs/LOT3.md). Le reset par email et la gestion de désactivation arrivent au prochain lot.
 
 API REST en **Node.js, Express, TypeScript et PostgreSQL avec Prisma**. Pas de framework frontend ni de bibliothèque de validation. L'adaptateur `@prisma/adapter-pg` relie Prisma 7 à PostgreSQL. Les tests utilisent le module intégré `node:test`.
 

@@ -2,7 +2,7 @@
 
 ## Lot 1 : modèles, mots de passe et premier super administrateur
 
-Le lot 1 prépare les données. Le lot 2 est maintenant implémenté : connexion JWT, rotation, déconnexion et protection des tickets. Voir [LOT2.md](LOT2.md) pour le lancement et les exemples. Les emails et invitations ne sont pas encore activés. Les descriptions au futur ci-dessous expliquent la conception initiale et les lots restants.
+Les lots 1 à 3 sont implémentés : données, connexion JWT, rotation, permissions et invitations. Voir [LOT2.md](LOT2.md) pour la connexion et [LOT3.md](LOT3.md) pour les invitations et Brevo. Les descriptions au futur ci-dessous expliquent la conception initiale ; le suivi courant se trouve dans CONSIGNES.md.
 
 ### Pourquoi ces tables ?
 
