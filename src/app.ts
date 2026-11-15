@@ -10,6 +10,8 @@ import { ticketsRoutes } from "./routes/tickets.routes.js";
 
 import { securityHeaders } from "./middlewares/security-headers.js";
 import { errorHandler, notFound } from "./middlewares/error-handler.js";
+import { rateLimit } from "./middlewares/rate-limit.js";
+import { openapi } from "./docs/openapi.js";
 
 export function createApp(
   db: PrismaClient,
@@ -21,10 +23,13 @@ export function createApp(
 
   app.disable("x-powered-by");
 
-  app.use(express.json({ limit: "64kb" }));
   app.use(securityHeaders);
+  app.use(rateLimit(300, 60 * 1000, (req) => req.ip ?? "unknown"));
+  app.use(express.json({ limit: "64kb" }));
 
   app.locals.waitForBackgroundTasks = dependencies.drain;
+
+  app.get("/openapi.json", (_req, res) => res.json(openapi));
 
   app.use("/auth", authRoutes(dependencies.auth, dependencies.authenticate));
   app.use("/users", usersRoutes(dependencies.users, dependencies.authenticate));

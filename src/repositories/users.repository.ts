@@ -14,7 +14,24 @@ export async function lockUser(tx: Prisma.TransactionClient, id: number) {
 
 export function usersRepository(db: PrismaClient) {
   return {
-    list: () =>
-      db.user.findMany({ select: publicUser, orderBy: { id: "asc" } }),
+    async list(page: number, limit: number) {
+      const [data, total] = await db.$transaction(
+        [
+          db.user.findMany({
+            select: publicUser,
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { id: "asc" },
+          }),
+          db.user.count(),
+        ],
+        { isolationLevel: "RepeatableRead" },
+      );
+
+      return {
+        data,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
+    },
   };
 }

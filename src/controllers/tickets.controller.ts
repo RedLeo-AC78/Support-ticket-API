@@ -9,8 +9,8 @@ export function ticketsController(service: TicketsService) {
     res.location(`/tickets/${ticket.id}`).status(201).json(ticket);
   };
 
-  const list: RequestHandler = async (_req, res) => {
-    res.json(await service.list(res.locals.user));
+  const list: RequestHandler = async (req, res) => {
+    res.json(await service.list(res.locals.user, req.query));
   };
 
   const get: RequestHandler = async (req, res) => {

@@ -7,16 +7,18 @@ export function usersController(
   service: UsersService,
   invitations: InvitationsService,
 ) {
-  const list: RequestHandler = async (_req, res) => {
-    res.json(await service.list());
+  const list: RequestHandler = async (req, res) => {
+    res.json(await service.list(req.query));
   };
 
   const create: RequestHandler = async (req, res) => {
-    res.status(201).json(await invitations.create(req.body));
+    res
+      .status(201)
+      .json(await invitations.create(req.body, res.locals.user.id));
   };
 
   const resend: RequestHandler = async (req, res) => {
-    res.json(await invitations.resend(req.params.id));
+    res.json(await invitations.resend(req.params.id, res.locals.user.id));
   };
 
   const changeStatus: RequestHandler = async (req, res) => {
@@ -30,5 +32,20 @@ export function usersController(
     );
   };
 
-  return { list, create, resend, changeStatus };
+  const changeRole: RequestHandler = async (req, res) => {
+    res.json(
+      await service.changeRole(
+        req.params.id,
+        req.body,
+        res.locals.user.id,
+        res.locals.sessionId,
+      ),
+    );
+  };
+
+  const audit: RequestHandler = async (req, res) => {
+    res.json(await service.audit(req.query));
+  };
+
+  return { list, create, resend, changeStatus, changeRole, audit };
 }

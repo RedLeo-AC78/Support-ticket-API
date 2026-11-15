@@ -21,6 +21,15 @@ export function usersRoutes(
 
   router.get("/", requirePermission("users:list"), controller.list);
 
+  router.get("/audit-logs", requirePermission("audit:read"), controller.audit);
+
+  router.patch(
+    "/:id/role",
+    requirePermission("users:manage-role"),
+    rateLimit(30, 15 * 60 * 1000, (req) => req.ip ?? "unknown"),
+    controller.changeRole,
+  );
+
   router.post(
     "/",
     requirePermission("users:invite"),

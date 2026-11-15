@@ -10,6 +10,8 @@ import {
 
 import { HttpError } from "../utils/security.js";
 
+import { ticketListInput } from "../validators/list.validation.js";
+
 type Actor = Pick<User, "id" | "role">;
 
 function visibility(user: Actor): Prisma.TicketWhereInput {
@@ -24,7 +26,8 @@ export function ticketsService(repository: TicketsRepository) {
   return {
     create: (input: unknown, actor: Actor) =>
       repository.create({ ...createTicketInput(input), ownerId: actor.id }),
-    list: (actor: Actor) => repository.list(visibility(actor)),
+    list: (actor: Actor, query: unknown = {}) =>
+      repository.list(visibility(actor), ticketListInput(query)),
     async get(value: string | string[], actor: Actor) {
       const ticket = await repository.find(ticketId(value), visibility(actor));
 

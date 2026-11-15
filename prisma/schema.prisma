@@ -94,3 +94,17 @@ model PasswordReset {
 
   @@index([userId])
 }
+
+// Identifiants conservés sans relation cascade : l'historique survit au compte.
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int
+  targetId  Int
+  action    String   @db.VarChar(60)
+  before    String?  @db.VarChar(30)
+  after     String?  @db.VarChar(30)
+  createdAt DateTime @default(now())
+
+  @@index([targetId, createdAt])
+  @@index([createdAt])
+}

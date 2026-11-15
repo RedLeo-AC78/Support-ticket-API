@@ -25,7 +25,7 @@ export function authService(db: PrismaClient, jwt: JwtService) {
   let activeLogins = 0;
 
   async function login(input: unknown) {
-    const body = objectBody(input),
+    const body = objectBody(input, ["email", "password"]),
       email = emailValue(body.email),
       password = passwordValue(body.password);
 
@@ -87,7 +87,9 @@ export function authService(db: PrismaClient, jwt: JwtService) {
   }
 
   async function refresh(input: unknown) {
-    const hash = digest(tokenValue(objectBody(input).refreshToken));
+    const hash = digest(
+      tokenValue(objectBody(input, ["refreshToken"]).refreshToken),
+    );
     const found = await db.refreshToken.findUnique({
       where: { hash },
       include: { session: true },
@@ -164,7 +166,9 @@ export function authService(db: PrismaClient, jwt: JwtService) {
   }
 
   async function logout(input: unknown) {
-    const hash = digest(tokenValue(objectBody(input).refreshToken));
+    const hash = digest(
+      tokenValue(objectBody(input, ["refreshToken"]).refreshToken),
+    );
     const token = await db.refreshToken.findUnique({
       where: { hash },
       include: { session: true },

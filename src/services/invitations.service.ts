@@ -47,10 +47,10 @@ async function deliver(mailer: Mailer, email: string, token: string) {
 export function invitationsService(db: PrismaClient, mailer: Mailer) {
   let activeHashes = 0;
 
-  async function create(input: unknown) {
-    const body = objectBody(input),
+  async function create(input: unknown, actorId: number) {
+    const body = objectBody(input, ["email", "role"]),
       email = emailValue(body.email);
-    const role = body.role ?? "USER";
+    const role = body.role === undefined ? "USER" : body.role;
 
     if (typeof role !== "string" || !Object.values(Role).includes(role as Role))
       throw new HttpError(
@@ -58,26 +58,33 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
         "Rôle attendu : USER, AGENT, ADMIN ou SUPER_ADMIN.",
       );
 
-    if ("password" in body || "passwordHash" in body || "status" in body)
-      throw new HttpError(
-        400,
-        "Le destinataire doit choisir son mot de passe via l’invitation.",
-      );
-
     const token = newToken();
-    const user = await db.user.create({
-      data: {
-        email,
-        role: role as Role,
-        status: "INVITED",
-        invitations: {
-          create: {
-            hash: digest(token),
-            expiresAt: new Date(Date.now() + invitationMs),
+    const user = await db.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          role: role as Role,
+          status: "INVITED",
+          invitations: {
+            create: {
+              hash: digest(token),
+              expiresAt: new Date(Date.now() + invitationMs),
+            },
           },
         },
-      },
-      select: publicUser,
+        select: publicUser,
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorId,
+          targetId: created.id,
+          action: "USER_INVITED",
+          after: created.role,
+        },
+      });
+
+      return created;
     });
     const delivery = await deliver(mailer, user.email, token);
 
@@ -85,7 +92,7 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
     return { user, invitation: delivery };
   }
 
-  async function resend(value: string | string[]) {
+  async function resend(value: string | string[], actorId: number) {
     const id = idValue(value),
       token = newToken();
     const user = await db.$transaction(async (tx) => {
@@ -116,6 +123,10 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
         },
       });
 
+      await tx.auditLog.create({
+        data: { actorId, targetId: id, action: "INVITATION_REISSUED" },
+      });
+
       return current;
     });
     const delivery = await deliver(mailer, user.email, token);
@@ -124,19 +135,13 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
   }
 
   async function accept(input: unknown) {
-    const body = objectBody(input);
+    const body = objectBody(input, ["token", "password", "confirmPassword"]);
 
     if (
       typeof body.token !== "string" ||
       !/^[A-Za-z0-9_-]{43}$/.test(body.token)
     )
       throw invalid();
-
-    if ("role" in body || "email" in body || "status" in body)
-      throw new HttpError(
-        400,
-        "Le compte et son rôle sont définis par l’invitation.",
-      );
 
     const password = passwordValue(body.password);
 
@@ -189,6 +194,16 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
         await tx.session.updateMany({
           where: { userId: user.id },
           data: { revokedAt: new Date() },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            actorId: user.id,
+            targetId: user.id,
+            action: "INVITATION_ACCEPTED",
+            before: "INVITED",
+            after: "ACTIVE",
+          },
         });
 
         return user;

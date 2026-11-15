@@ -8,14 +8,19 @@ import {
 
 import { HttpError, objectBody } from "../utils/security.js";
 
+import { Role } from "../generated/prisma/enums.js";
+
+import { pagination } from "../validators/list.validation.js";
+
 export function usersService(db: PrismaClient) {
   const repository = usersRepository(db);
 
-  async function changeStatus(
+  async function changeAccount(
     value: string | string[],
     input: unknown,
     actorId: number,
     sessionId: string,
+    field: "role" | "status",
   ) {
     if (
       typeof value !== "string" ||
@@ -27,7 +32,21 @@ export function usersService(db: PrismaClient) {
     const id = Number(value),
       body = objectBody(input);
 
-    if (body.status !== "ACTIVE" && body.status !== "DISABLED")
+    if (Object.keys(body).some((key) => key !== field))
+      throw new HttpError(400, "Champ inconnu.");
+
+    if (
+      field === "role" &&
+      (typeof body.role !== "string" ||
+        !Object.values(Role).includes(body.role as Role))
+    )
+      throw new HttpError(400, "Rôle invalide.");
+
+    if (
+      field === "status" &&
+      body.status !== "ACTIVE" &&
+      body.status !== "DISABLED"
+    )
       throw new HttpError(400, "status doit être ACTIVE ou DISABLED.");
 
     const user = await db.$transaction(async (tx) => {
@@ -49,6 +68,7 @@ export function usersService(db: PrismaClient) {
         actor.status !== "ACTIVE" ||
         actor.role !== "SUPER_ADMIN" ||
         !session ||
+        session.userId !== actorId ||
         session.revokedAt ||
         session.expiresAt <= new Date()
       ) {
@@ -58,7 +78,8 @@ export function usersService(db: PrismaClient) {
       const target = await tx.user.findUniqueOrThrow({ where: { id } });
 
       if (
-        body.status === "DISABLED" &&
+        (body.status === "DISABLED" ||
+          (field === "role" && body.role !== "SUPER_ADMIN")) &&
         target.role === "SUPER_ADMIN" &&
         target.status === "ACTIVE" &&
         (await tx.user.count({
@@ -67,11 +88,15 @@ export function usersService(db: PrismaClient) {
       ) {
         throw new HttpError(
           409,
-          "Impossible de désactiver le dernier Super Admin actif.",
+          "Impossible de désactiver ou rétrograder le dernier Super Admin actif.",
         );
       }
 
-      if (body.status === "ACTIVE" && target.status !== "DISABLED")
+      if (
+        field === "status" &&
+        body.status === "ACTIVE" &&
+        target.status !== "DISABLED"
+      )
         throw new HttpError(
           409,
           "Seul un compte désactivé peut être réactivé.",
@@ -86,7 +111,7 @@ export function usersService(db: PrismaClient) {
             : "INVITED";
       const user = await tx.user.update({
         where: { id },
-        data: { status },
+        data: field === "status" ? { status } : { role: body.role as Role },
         select: publicUser,
       });
 
@@ -99,19 +124,82 @@ export function usersService(db: PrismaClient) {
 
       await tx.invitation.deleteMany({ where: { userId: id } });
 
+      // Même transaction : aucune modification sensible sans sa trace d'audit.
+      await tx.auditLog.create({
+        data: {
+          actorId,
+          targetId: id,
+          action:
+            field === "role" ? "USER_ROLE_CHANGED" : "USER_STATUS_CHANGED",
+          before: target[field],
+          after: user[field],
+        },
+      });
+
       return user;
     });
 
     return {
       user,
       message:
-        user.status === "INVITED"
-          ? "Compte réactivé en attente : renvoyez une invitation."
-          : "Statut du compte mis à jour.",
+        field === "role"
+          ? "Rôle modifié. Sessions révoquées ; renvoyez une invitation si le compte est en attente."
+          : user.status === "INVITED"
+            ? "Compte réactivé en attente : renvoyez une invitation."
+            : "Statut du compte mis à jour.",
     };
   }
 
-  return { list: repository.list, changeStatus };
+  async function audit(query: unknown) {
+    const input = objectBody(query);
+
+    if (Object.keys(input).some((key) => !["page", "limit"].includes(key)))
+      throw new HttpError(400, "Paramètre inconnu.");
+
+    const { page, limit } = pagination(input);
+    const [data, total] = await db.$transaction(
+      [
+        db.auditLog.findMany({
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { id: "desc" },
+        }),
+        db.auditLog.count(),
+      ],
+      { isolationLevel: "RepeatableRead" },
+    );
+
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  return {
+    list: (query: unknown) => {
+      const input = objectBody(query);
+
+      if (Object.keys(input).some((key) => !["page", "limit"].includes(key)))
+        throw new HttpError(400, "Paramètre inconnu.");
+
+      const { page, limit } = pagination(input);
+
+      return repository.list(page, limit);
+    },
+    audit,
+    changeStatus: (
+      id: string | string[],
+      input: unknown,
+      actorId: number,
+      sessionId: string,
+    ) => changeAccount(id, input, actorId, sessionId, "status"),
+    changeRole: (
+      id: string | string[],
+      input: unknown,
+      actorId: number,
+      sessionId: string,
+    ) => changeAccount(id, input, actorId, sessionId, "role"),
+  };
 }
 
 export type UsersService = ReturnType<typeof usersService>;

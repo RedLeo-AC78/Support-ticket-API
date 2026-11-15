@@ -53,7 +53,7 @@ export function passwordResetService(db: PrismaClient, mailer: Mailer) {
   let activeHashes = 0;
 
   function forgot(input: unknown) {
-    const email = emailValue(objectBody(input).email);
+    const email = emailValue(objectBody(input, ["email"]).email);
 
     enqueue(async () => {
       const found = await db.user.findUnique({ where: { email } });
@@ -108,7 +108,7 @@ export function passwordResetService(db: PrismaClient, mailer: Mailer) {
   }
 
   async function reset(input: unknown) {
-    const body = objectBody(input);
+    const body = objectBody(input, ["token", "newPassword", "confirmPassword"]);
 
     if (
       typeof body.token !== "string" ||
@@ -174,6 +174,14 @@ export function passwordResetService(db: PrismaClient, mailer: Mailer) {
         });
 
         await tx.invitation.deleteMany({ where: { userId: current.userId } });
+
+        await tx.auditLog.create({
+          data: {
+            actorId: current.userId,
+            targetId: current.userId,
+            action: "PASSWORD_RESET",
+          },
+        });
 
         return user;
       });

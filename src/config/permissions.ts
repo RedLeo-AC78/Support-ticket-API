@@ -5,6 +5,8 @@ export const permissions = {
   SUPER_ADMIN: [
     "users:invite",
     "users:manage-status",
+    "users:manage-role",
+    "audit:read",
     "users:list",
     "tickets:read-all",
     "tickets:update-status",

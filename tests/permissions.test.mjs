@@ -4,7 +4,12 @@ import assert from "node:assert/strict";
 import { hasPermission } from "../dist/config/permissions.js";
 
 test("seul SUPER_ADMIN pourra inviter et désactiver les comptes", () => {
-  for (const permission of ["users:invite", "users:manage-status"]) {
+  for (const permission of [
+    "users:invite",
+    "users:manage-status",
+    "users:manage-role",
+    "audit:read",
+  ]) {
     assert.equal(hasPermission("SUPER_ADMIN", permission), true);
 
     for (const role of ["ADMIN", "AGENT", "USER"])

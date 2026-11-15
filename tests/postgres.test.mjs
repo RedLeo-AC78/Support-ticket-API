@@ -162,7 +162,7 @@ test(
     assert.deepEqual(
       (
         await (await request("/tickets", "GET", undefined, userToken)).json()
-      ).map((x) => x.id),
+      ).data.map((x) => x.id),
       [ticket.id],
     );
 
@@ -523,6 +523,20 @@ test(
     assert.equal(accepted.user.role, "AGENT");
 
     assert.equal(accepted.user.status, "ACTIVE");
+
+    assert.equal(
+      await db.auditLog.count({
+        where: { targetId: invited.user.id, action: "USER_INVITED" },
+      }),
+      1,
+    );
+
+    assert.equal(
+      await db.auditLog.count({
+        where: { targetId: invited.user.id, action: "INVITATION_ACCEPTED" },
+      }),
+      1,
+    );
 
     assert.equal(
       (await request("/auth/accept-invitation", "POST", acceptBody)).status,

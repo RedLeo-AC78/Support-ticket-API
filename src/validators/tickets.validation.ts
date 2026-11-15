@@ -34,7 +34,7 @@ export function createTicketInput(value: unknown) {
 }
 
 export function ticketStatusInput(value: unknown): TicketStatus {
-  const body = objectBody(value);
+  const body = objectBody(value, ["status"]);
 
   if (
     typeof body.status !== "string" ||

@@ -311,6 +311,13 @@ test(
 
     await login(users.USER, newPassword);
 
+    assert.equal(
+      await db.auditLog.count({
+        where: { targetId: users.USER.id, action: "PASSWORD_RESET" },
+      }),
+      1,
+    );
+
     const notification = mailbox.find((m) =>
       m.subject.includes("a été modifié"),
     );

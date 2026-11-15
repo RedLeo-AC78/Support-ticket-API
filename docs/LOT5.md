@@ -105,16 +105,16 @@ npm.cmd test
 npm.cmd run test:db
 ```
 
-La première commande compile et exécute 10 tests sans base ; les 2 scénarios PostgreSQL sont marqués SKIP. La seconde exécute ces 2 scénarios complets, avec plusieurs assertions chacun, sur des schémas temporaires. Ce ne sont donc pas seulement deux petites vérifications. Les emails sont simulés et deux erreurs d'envoi attendues sont journalisées pour vérifier les pannes.
+La première commande compile et exécute 15 tests sans base ; les 3 scénarios PostgreSQL sont marqués SKIP. La seconde exécute ces 3 scénarios complets, avec plusieurs assertions chacun, sur des schémas temporaires. Ce ne sont donc pas seulement deux petites vérifications. Les emails sont simulés et deux erreurs d'envoi attendues sont journalisées pour vérifier les pannes.
 
 Couverture : refus anonymes, JWT invalides, rôles, propriété des tickets, expiration et rotation, rejeu et concurrence, invitations, panne d'envoi et renvoi, reset, désactivation/réactivation et dernier Super Admin. Les tests ne remplacent pas un audit de sécurité complet.
 
 ## Limites à annoncer honnêtement
 
-- Pas d'interface graphique ni de pagination des listes.
+- Pas d'interface graphique. Les listes sont paginées depuis le lot 6.
 - Limites de débit et file email en mémoire ; une interruption brutale peut perdre un envoi planifié.
 - L'acceptation par Brevo n'est pas une preuve de livraison ; consulter ses journaux en cas de problème.
-- Pas de nettoyage périodique des sessions et codes expirés, ni d'audit détaillé des actions administratives.
+- Pas de nettoyage périodique des sessions et codes expirés. Les actions sensibles sont auditées depuis le lot 6 ; aucun stockage externe immuable n'est prévu.
 - Les calculs scrypt sont bornés par parcours, mais leurs limites s'additionnent ; surveiller les ressources d'un serveur exposé.
 - HTTPS, sauvegardes, supervision et file d'envoi durable sont nécessaires avant une utilisation publique sérieuse. Une future interface web devra définir la gestion sûre des tokens/cookies et la protection CSRF.
 - Des requêtes déjà autorisées et en cours peuvent terminer après une révocation ; les suivantes sont refusées.

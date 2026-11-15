@@ -43,3 +43,19 @@ INVITED signifie qu'un mot de passe reste à choisir ; ACTIVE permet la connexio
 ## Portée de la validation
 
 Les tests automatisés sont dans `tests/`, le détail des commandes dans [LOT5.md](LOT5.md). Ils vérifient les scénarios précisés ci-dessus, sans constituer un audit de sécurité complet. Les limites de déploiement sont documentées dans le README et les guides ; le projet n'est pas présenté comme un service de production prêt à être exposé tel quel.
+
+## Exigences complémentaires : lot 6
+
+| Exigence | Réalisation |
+|---|---|
+| Tests unitaires et intégration | node:test, services simulés et PostgreSQL temporaire |
+| Authentification, permissions, propriété | Tests existants complétés ; rôles, sessions, accès hors périmètre |
+| Erreurs centralisées et réponses | error-handler.ts ; erreurs error/code/status ; listes data/meta |
+| Pagination, filtres, tri | GET /tickets ; validation, limite 100, tri stable, count dans le même périmètre |
+| Force brute et abus | Limites IP/email existantes + 300 requêtes/IP/minute globales |
+| SQL injection et validation | Prisma paramétré, champs de tri autorisés, validation runtime |
+| Audit des actions sensibles | AuditLog transactionnel, statut/rôle/invitation/reset, lecture SUPER_ADMIN |
+| Swagger / OpenAPI | GET /openapi.json, contrat 3.0.3 avec schémas et authentification |
+| CI GitHub Actions | .github/workflows/ci.yml, push + pull_request, PostgreSQL jetable |
+
+Voir [LOT6.md](LOT6.md) pour les explications, limites et commandes de démonstration.

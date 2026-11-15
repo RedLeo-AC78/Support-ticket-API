@@ -9,9 +9,15 @@ export class HttpError extends Error {
   }
 }
 
-export function objectBody(value: unknown): Record<string, unknown> {
+export function objectBody(
+  value: unknown,
+  allowed?: readonly string[],
+): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value))
     throw new HttpError(400, "Objet JSON attendu.");
+
+  if (allowed && Object.keys(value).some((key) => !allowed.includes(key)))
+    throw new HttpError(400, "Champ inconnu dans le corps JSON.");
 
   return value as Record<string, unknown>;
 }
