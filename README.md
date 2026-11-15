@@ -37,6 +37,10 @@ Pour envoyer réellement des emails, configurer Brevo selon [LOT3.md](docs/LOT3.
 
 ## Guides
 
+Pour présenter le projet : [démonstration guidée dans PowerShell](docs/DEMONSTRATION.md), avec pauses et explications à chaque étape.
+
+La structure du code et les responsabilités de chaque dossier sont expliquées dans [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 | Guide | Contenu |
 |---|---|
 | [Lot 1](docs/LOT1.md) | Installation, modèles, hachage, premier Super Admin |

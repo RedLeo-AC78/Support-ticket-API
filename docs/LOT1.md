@@ -80,7 +80,7 @@ Le **rôle** décrit ce qu'un compte a le droit de faire :
 - `AGENT` : traite les tickets ayant un propriétaire.
 - `USER` : crée et consulte ses propres tickets.
 
-La matrice complète est dans [CONSIGNES.md](CONSIGNES.md) et sa politique est codée dans `src/permissions.ts`. Les middlewares ajoutés au lot 2 appliquent ces droits aux requêtes.
+La matrice complète est dans [CONSIGNES.md](CONSIGNES.md) et sa politique est codée dans `src/config/permissions.ts`. Les middlewares ajoutés au lot 2 appliquent ces droits aux requêtes.
 
 L'**état** décrit si le compte peut se connecter :
 
@@ -112,7 +112,7 @@ Un verrou PostgreSQL empêche deux exécutions simultanées du script de créer 
 
 ## 6. Pourquoi hacher les mots de passe ?
 
-La base ne conserve pas le mot de passe en clair. `src/security.ts` utilise `scrypt`, fourni par `node:crypto`, pour produire une empreinte à partir du mot de passe et d'un sel aléatoire propre au compte.
+La base ne conserve pas le mot de passe en clair. `src/utils/security.ts` utilise `scrypt`, fourni par `node:crypto`, pour produire une empreinte à partir du mot de passe et d'un sel aléatoire propre au compte.
 
 Le sel fait que deux personnes ayant le même mot de passe n'ont pas la même empreinte. Il n'est pas secret : il est conservé avec l'empreinte. Les réglages du projet sont N=131072, r=8, p=1, avec un sel de 16 octets. Le coût mémoire est d'environ 128 Mio par calcul ; les routes limitent donc les calculs simultanés.
 

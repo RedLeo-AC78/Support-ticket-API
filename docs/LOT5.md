@@ -8,6 +8,8 @@ Les parcours d'invitation réelle via Brevo, d'activation, de reset réel, de co
 
 ## Architecture à présenter
 
+Le code est maintenant séparé en routes, contrôleurs, services, repositories et middlewares. Le détail et un exemple de requête sont dans [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ```mermaid
 flowchart LR
     Client[PowerShell ou client HTTP] --> Express[Express : routes et validation]
@@ -23,16 +25,19 @@ Le navigateur n'est pas une interface de l'application : les réponses sont des 
 
 | Fichier | Ce qu'il faut savoir expliquer |
 |---|---|
-| src/app.ts | Assemblage des routes et gestion des erreurs |
+| src/app.ts | Assemblage d'Express et des routeurs |
+| src/container.ts | Construction et liaison des dépendances |
+| src/controllers/ | Adaptation HTTP des requêtes et réponses |
+| src/routes/ | URL, méthodes et protections |
 | src/server.ts | Connexion PostgreSQL, démarrage et arrêt |
-| src/security.ts | Validation, scrypt, génération des codes et limites |
-| src/jwt.ts | Signature et vérification du JWT |
-| src/auth.ts | Login, refresh, logout, middleware et visibilité des tickets |
-| src/permissions.ts | Droits des quatre rôles |
-| src/invitations.ts | Création, renvoi et activation des comptes |
-| src/account-status.ts | Désactivation/réactivation et dernier Super Admin |
-| src/password-reset.ts | Demande par email, reset et révocation |
-| src/mail.ts | Transport Brevo ou mode local |
+| src/utils/security.ts | Validation, scrypt, génération des codes et limites |
+| src/config/jwt.ts | Signature et vérification du JWT |
+| src/services/auth.service.ts | Login, refresh, logout, middleware et visibilité des tickets |
+| src/config/permissions.ts | Droits des quatre rôles |
+| src/services/invitations.service.ts | Création, renvoi et activation des comptes |
+| src/services/users.service.ts | Désactivation/réactivation et dernier Super Admin |
+| src/services/password-reset.service.ts | Demande par email, reset et révocation |
+| src/services/mail.service.ts | Transport Brevo ou mode local |
 | prisma/schema.prisma | Modèles, relations et contraintes |
 
 ## Avant la démonstration
@@ -100,7 +105,7 @@ npm.cmd test
 npm.cmd run test:db
 ```
 
-La première commande compile et exécute 8 tests sans base ; les 2 scénarios PostgreSQL sont marqués SKIP. La seconde exécute ces 2 scénarios complets, avec plusieurs assertions chacun, sur des schémas temporaires. Ce ne sont donc pas seulement deux petites vérifications. Les emails sont simulés et deux erreurs d'envoi attendues sont journalisées pour vérifier les pannes.
+La première commande compile et exécute 10 tests sans base ; les 2 scénarios PostgreSQL sont marqués SKIP. La seconde exécute ces 2 scénarios complets, avec plusieurs assertions chacun, sur des schémas temporaires. Ce ne sont donc pas seulement deux petites vérifications. Les emails sont simulés et deux erreurs d'envoi attendues sont journalisées pour vérifier les pannes.
 
 Couverture : refus anonymes, JWT invalides, rôles, propriété des tickets, expiration et rotation, rejeu et concurrence, invitations, panne d'envoi et renvoi, reset, désactivation/réactivation et dernier Super Admin. Les tests ne remplacent pas un audit de sécurité complet.
 
