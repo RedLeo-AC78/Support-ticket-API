@@ -29,8 +29,8 @@ jobs:
       DATABASE_URL: postgresql://test:test@localhost:5432/support_ticket_test
       MAIL_PROVIDER: local
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
