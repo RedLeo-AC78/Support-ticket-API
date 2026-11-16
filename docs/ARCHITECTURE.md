@@ -109,3 +109,9 @@ npm.cmd start
 ```
 
 Les commandes de démonstration des lots précédents restent utilisables. Aucun compte réel n'est modifié par le refactoring. Faire un commit dédié à cette restructuration sur develop.
+
+## Assistance IA (lot 7)
+
+server.ts construit le fournisseur OpenAI optionnel puis le transmet à createApp et container.ts. Le service tickets enregistre le ticket avant de demander son analyse. openai.provider.ts connaît uniquement le transport HTTP et les consignes ; ticket-ai.service.ts garde la logique métier, les transactions et l’audit. La validation des réponses du modèle est séparée dans ai.validation.ts. ticket-access.ts partage le périmètre de visibilité.
+
+L’appel réseau se fait hors transaction ; une version de ticket empêche une réponse tardive de remplacer une décision humaine. Le propriétaire confirme une proposition avant la résolution. Les tests injectent un fournisseur simulé. Les détails et le diagramme du parcours sont dans [LOT7.md](LOT7.md). Contrairement au refactoring initial, ce lot ajoute une migration et une configuration optionnelle.

@@ -1,4 +1,9 @@
-import type { Prisma, User } from "../generated/prisma/client.js";
+import {
+  ticketVisibility as visibility,
+  type TicketActor as Actor,
+} from "../config/ticket-access.js";
+
+import type { TicketAiService } from "./ticket-ai.service.js";
 
 import type { TicketsRepository } from "../repositories/tickets.repository.js";
 
@@ -12,20 +17,34 @@ import { HttpError } from "../utils/security.js";
 
 import { ticketListInput } from "../validators/list.validation.js";
 
-type Actor = Pick<User, "id" | "role">;
-
-function visibility(user: Actor): Prisma.TicketWhereInput {
-  if (user.role === "USER") return { ownerId: user.id };
-
-  if (user.role === "AGENT") return { ownerId: { not: null } };
-
-  return {};
-}
-
-export function ticketsService(repository: TicketsRepository) {
+export function ticketsService(
+  repository: TicketsRepository,
+  ai?: TicketAiService,
+) {
   return {
-    create: (input: unknown, actor: Actor) =>
-      repository.create({ ...createTicketInput(input), ownerId: actor.id }),
+    create: (input: unknown, actor: Actor) => {
+      const created = repository.create({
+        ...createTicketInput(input),
+        ownerId: actor.id,
+      });
+
+      if (!ai?.enabled) return created;
+
+      return created.then(async (ticket) => {
+        try {
+          return await ai.analyze(String(ticket.id), actor);
+        } catch {
+          // Le ticket est déjà créé : ne pas encourager une deuxième création sur erreur IA.
+          console.error(
+            "Traitement IA interrompu. Le ticket reste enregistré.",
+          );
+
+          return (
+            (await repository.find(ticket.id, visibility(actor))) ?? ticket
+          );
+        }
+      });
+    },
     list: (actor: Actor, query: unknown = {}) =>
       repository.list(visibility(actor), ticketListInput(query)),
     async get(value: string | string[], actor: Actor) {

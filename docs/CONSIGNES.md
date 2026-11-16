@@ -59,3 +59,14 @@ Les tests automatisés sont dans `tests/`, le détail des commandes dans [LOT5.m
 | CI GitHub Actions | .github/workflows/ci.yml, push + pull_request, PostgreSQL jetable |
 
 Voir [LOT6.md](LOT6.md) pour les explications, limites et commandes de démonstration.
+
+## Assistance IA : choix validés (lot 7)
+
+- Fournisseur OpenAI avec clé du professeur, modèle configurable, désactivé par défaut.
+- Classement support informatique / hors sujet / à vérifier ; filtre aiState.
+- Réponse proposée automatiquement après création, sans capacité d’exécuter des commandes.
+- Confirmation du propriétaire avant RESOLVED ; sinon reprise humaine en IN_PROGRESS.
+- Permissions, quotas, validation des réponses, audit et protection contre les résultats obsolètes.
+- Tests simulés : aucune clé ni dépense en CI ; qualité du vrai modèle à vérifier après configuration.
+
+Voir [LOT7.md](LOT7.md).

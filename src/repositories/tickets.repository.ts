@@ -8,13 +8,14 @@ export function ticketsRepository(db: PrismaClient) {
     create: (data: { title: string; description: string; ownerId: number }) =>
       db.ticket.create({ data }),
     async list(scope: Prisma.TicketWhereInput, options: TicketListInput) {
-      const { page, limit, sortBy, order, status, search } = options;
+      const { page, limit, sortBy, order, status, search, aiState } = options;
       // AND conserve toujours le périmètre d'accès, quels que soient les filtres.
       const where: Prisma.TicketWhereInput = {
         AND: [
           scope,
           {
             ...(status ? { status } : {}),
+            ...(aiState ? { ai: { is: { state: aiState } } } : {}),
             ...(search
               ? {
                   OR: [
@@ -36,6 +37,7 @@ export function ticketsRepository(db: PrismaClient) {
       const [data, total] = await db.$transaction(
         [
           db.ticket.findMany({
+            include: { ai: true },
             where,
             skip: (page - 1) * limit,
             take: limit,
@@ -55,12 +57,30 @@ export function ticketsRepository(db: PrismaClient) {
       };
     },
     find: (id: number, scope: Prisma.TicketWhereInput) =>
-      db.ticket.findFirst({ where: { ...scope, id } }),
+      db.ticket.findFirst({ where: { ...scope, id }, include: { ai: true } }),
     updateStatus: (
       id: number,
       scope: Prisma.TicketWhereInput,
       status: TicketStatus,
-    ) => db.ticket.update({ where: { ...scope, id }, data: { status } }),
+    ) =>
+      db.$transaction(async (tx) => {
+        const ticket = await tx.ticket.update({
+          where: { ...scope, id },
+          data: { status, revision: { increment: 1 } },
+        });
+
+        await tx.ticketAi.updateMany({
+          where: { ticketId: id },
+          data: {
+            state: "NEEDS_REVIEW",
+            answer: null,
+            reason:
+              "Statut modifié par un agent : la proposition IA précédente n'est plus active.",
+          },
+        });
+
+        return ticket;
+      }),
   };
 }
 

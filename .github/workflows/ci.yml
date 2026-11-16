@@ -27,7 +27,8 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://test:test@localhost:5432/support_ticket_test
-      MAIL_PROVIDER: local
+      MAIL_MODE: local
+      AI_ENABLED: "false"
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

@@ -7,6 +7,7 @@ const result = spawnSync(
     "tests/postgres.test.mjs",
     "tests/reset-postgres.test.mjs",
     "tests/hardening-postgres.test.mjs",
+    "tests/ai-postgres.test.mjs",
   ],
   {
     env: { ...process.env, RUN_DB_TESTS: "1" },

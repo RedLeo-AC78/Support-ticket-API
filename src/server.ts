@@ -4,6 +4,8 @@ import { PrismaClient } from "./generated/prisma/client.js";
 
 import { createApp } from "./app.js";
 
+import { createAiProvider } from "./services/openai.provider.js";
+
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString)
@@ -20,7 +22,7 @@ const db = new PrismaClient({
 
 await db.$connect();
 
-const app = createApp(db);
+const app = createApp(db, undefined, undefined, createAiProvider());
 const server = app.listen(port, () =>
   console.log(`API disponible : http://localhost:${port}/tickets`),
 );
@@ -31,7 +33,7 @@ function shutdown() {
 
   stopping = true;
 
-  const timeout = setTimeout(() => process.exit(1), 10000);
+  const timeout = setTimeout(() => process.exit(1), 30000);
 
   timeout.unref();
 

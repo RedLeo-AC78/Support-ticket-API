@@ -47,6 +47,7 @@ La structure du code et les responsabilités de chaque dossier sont expliquées 
 | [Lot 2](docs/LOT2.md) | Connexion, JWT, refresh, déconnexion et tickets |
 | [Lot 3](docs/LOT3.md) | Invitations, acceptation et configuration Brevo |
 | [Lot 4](docs/LOT4.md) | Désactivation/réactivation et reset par email |
+| [Lot 7](docs/LOT7.md) | IA OpenAI, classement, réponses et confirmation de résolution |
 | [Lot 6](docs/LOT6.md) | Tests, pagination, audit, OpenAPI et CI |
 | [Lot 5](docs/LOT5.md) | Revue finale, démonstration et préparation de l'oral |
 | [Consignes](docs/CONSIGNES.md) | Correspondance des exigences et permissions |
@@ -83,7 +84,7 @@ Erreurs JSON : 400 saisie invalide, 401 authentification refusée, 403 permissio
 
 ## Pagination et contrat API
 
-GET /tickets accepte page, limit (1–100, 20 par défaut), status, search, sortBy et order.
+GET /tickets accepte page, limit (1–100, 20 par défaut), status, search, sortBy, order et aiState.
 Exemple : /tickets?page=1&limit=10&status=OPEN&sortBy=createdAt&order=desc.
 Les collections /tickets, /users et /users/audit-logs renvoient désormais { data, meta }.
 Les erreurs renvoient { error, code, status }. Le login conserve accessToken et refreshToken à la racine.
@@ -93,6 +94,16 @@ La migration du lot 6 ajoute AuditLog ; lancer npm.cmd run db:migrate avant de d
 GitHub Actions lance les vérifications sur chaque push et pull request, avec sa propre base PostgreSQL et des emails simulés.
 Voir [LOT6.md](docs/LOT6.md) pour la démonstration et les changements de réponse.
 
+## Assistance IA facultative
+
+L'intégration OpenAI est désactivée par défaut. Avec AI_ENABLED=true, OPENAI_API_KEY et OPENAI_MODEL, un nouveau ticket est classé automatiquement et peut recevoir une proposition de réponse. Le modèle doit être autorisé par le professeur et compatible avec Responses et les sorties structurées.
+
+Le ticket reste ouvert jusqu'au retour de son propriétaire : POST /tickets/:id/ai/feedback avec { "resolved": true } le passe en RESOLVED ; false demande une reprise humaine. Les demandes hors sujet sont classées sans réponse technique ni suppression. Les agents peuvent relancer les échecs via POST /tickets/:id/ai/retry.
+
+La migration du lot 7 ajoute la table TicketAi. Appliquer npm.cmd run db:migrate avant de démarrer la nouvelle version. La clé reste exclusivement dans .env. Les tests simulent OpenAI et ne consomment aucun crédit.
+
+Voir [LOT7.md](docs/LOT7.md) pour le fonctionnement, les limites, la configuration et la démonstration. La création peut attendre jusqu'à environ 20 secondes pour l'appel IA. L'application ne répare ni n'exécute de commandes sur le poste utilisateur.
+
 ## Tests et développement
 
 ```powershell
@@ -100,7 +111,7 @@ npm.cmd test
 npm.cmd run test:db
 ```
 
-La première commande compile et exécute les tests sans PostgreSQL ; les trois scénarios PostgreSQL sont ignorés dans cette commande. La seconde les exécute sur des schémas temporaires supprimés ensuite. Elle utilise DATABASE_URL et nécessite le droit de créer des schémas, mais ne modifie pas les comptes et tickets réels. Les emails sont simulés ; les messages d'échec email des scénarios de panne sont attendus.
+La première commande compile et exécute les tests sans PostgreSQL ; les quatre scénarios PostgreSQL sont ignorés dans cette commande. La seconde les exécute sur des schémas temporaires supprimés ensuite. Elle utilise DATABASE_URL et nécessite le droit de créer des schémas, mais ne modifie pas les comptes et tickets réels. Les emails sont simulés ; les messages d'échec email des scénarios de panne sont attendus.
 
 `npm.cmd run dev` compile puis surveille le JavaScript compilé. Après une modification TypeScript, lancer `npm.cmd run build` dans un second terminal. Après un changement de schéma, créer une migration avec `npm.cmd run db:dev -- --name nom_du_changement`, puis recompiler.
 

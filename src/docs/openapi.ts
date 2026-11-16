@@ -957,7 +957,7 @@ export const openapi = {
       post: {
         summary: "Créer son ticket (tout compte actif)",
         description:
-          "Titre et description non vides après trim. Seuls ces champs sont utilisés : ownerId est imposé par le serveur, statut initial OPEN.",
+          "Titre et description non vides après trim. Seuls ces champs sont utilisés : ownerId est imposé par le serveur, statut initial OPEN. Si AI_ENABLED=true, classement et réponse proposée automatiquement (attente fournisseur maximale 20 secondes). Une panne IA conserve le ticket. Pas de résolution sans confirmation du propriétaire. 30 créations/IP/heure.",
         tags: ["tickets"],
         operationId: "posttickets",
         requestBody: {
@@ -1086,6 +1086,21 @@ export const openapi = {
               type: "string",
               enum: ["asc", "desc"],
               default: "desc",
+            },
+          },
+          {
+            name: "aiState",
+            in: "query",
+            schema: {
+              type: "string",
+              enum: [
+                "PROCESSING",
+                "ANSWERED",
+                "OFF_TOPIC",
+                "NEEDS_REVIEW",
+                "FAILED",
+                "CONFIRMED",
+              ],
             },
           },
         ],
@@ -1275,6 +1290,139 @@ export const openapi = {
         },
       },
     },
+    "/tickets/{id}/ai/retry": {
+      post: {
+        tags: ["tickets"],
+        operationId: "retryTicketAi",
+        summary:
+          "Relancer une analyse absente ou en échec (AGENT, ADMIN, SUPER_ADMIN)",
+        description:
+          "Même visibilité que les tickets. Maximum 3 tentatives/ticket et 5 requêtes/IP/heure. Une analyse PROCESSING interrompue peut être reprise après 60 secondes. Aucune relance automatique. 503 si IA désactivée. Le ticket doit être OPEN ou IN_PROGRESS.",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+              maximum: 2147483647,
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Ticket et état IA",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Ticket",
+                },
+              },
+            },
+          },
+          "400": {
+            $ref: "#/components/responses/Error400",
+          },
+          "401": {
+            $ref: "#/components/responses/Error401",
+          },
+          "403": {
+            $ref: "#/components/responses/Error403",
+          },
+          "404": {
+            $ref: "#/components/responses/Error404",
+          },
+          "409": {
+            $ref: "#/components/responses/Error409",
+          },
+          "429": {
+            $ref: "#/components/responses/Error429",
+          },
+          "500": {
+            $ref: "#/components/responses/Error500",
+          },
+          "503": {
+            $ref: "#/components/responses/Error503",
+          },
+        },
+      },
+    },
+    "/tickets/{id}/ai/feedback": {
+      post: {
+        tags: ["tickets"],
+        operationId: "ticketAiFeedback",
+        summary:
+          "Confirmer ou refuser la solution IA (propriétaire uniquement)",
+        description:
+          "Uniquement pour une proposition ANSWERED correspondant à la version actuelle du ticket. true passe en RESOLVED/CONFIRMED ; false passe en IN_PROGRESS/NEEDS_REVIEW. 30 requêtes/IP/heure. Répétition ou conflit : 409. Le classement hors sujet ne supprime ni ne ferme un ticket.",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+              maximum: 2147483647,
+            },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                additionalProperties: false,
+                required: ["resolved"],
+                properties: {
+                  resolved: {
+                    type: "boolean",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Ticket et état IA",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Ticket",
+                },
+              },
+            },
+          },
+          "400": {
+            $ref: "#/components/responses/Error400",
+          },
+          "401": {
+            $ref: "#/components/responses/Error401",
+          },
+          "403": {
+            $ref: "#/components/responses/Error403",
+          },
+          "404": {
+            $ref: "#/components/responses/Error404",
+          },
+          "409": {
+            $ref: "#/components/responses/Error409",
+          },
+          "429": {
+            $ref: "#/components/responses/Error429",
+          },
+          "500": {
+            $ref: "#/components/responses/Error500",
+          },
+          "503": {
+            $ref: "#/components/responses/Error503",
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -1364,6 +1512,14 @@ export const openapi = {
           updatedAt: {
             type: "string",
             format: "date-time",
+          },
+          ai: {
+            $ref: "#/components/schemas/TicketAi",
+          },
+          revision: {
+            type: "integer",
+            minimum: 0,
+            description: "Version interne de concurrence.",
           },
         },
         required: [
@@ -1488,6 +1644,10 @@ export const openapi = {
               "INVITATION_REISSUED",
               "INVITATION_ACCEPTED",
               "PASSWORD_RESET",
+              "TICKET_AI_REQUESTED",
+              "TICKET_AI_COMPLETED",
+              "TICKET_AI_CONFIRMED",
+              "TICKET_AI_REJECTED",
             ],
           },
           before: {
@@ -1501,6 +1661,10 @@ export const openapi = {
           createdAt: {
             type: "string",
             format: "date-time",
+          },
+          targetType: {
+            type: "string",
+            enum: ["USER", "TICKET"],
           },
         },
         required: [
@@ -1540,6 +1704,69 @@ export const openapi = {
           },
           meta: {
             $ref: "#/components/schemas/Meta",
+          },
+        },
+      },
+      TicketAi: {
+        type: "object",
+        nullable: true,
+        required: [
+          "state",
+          "answer",
+          "reason",
+          "classification",
+          "attempts",
+          "provider",
+          "model",
+          "promptVersion",
+        ],
+        properties: {
+          state: {
+            type: "string",
+            enum: [
+              "PROCESSING",
+              "ANSWERED",
+              "OFF_TOPIC",
+              "NEEDS_REVIEW",
+              "FAILED",
+              "CONFIRMED",
+            ],
+          },
+          classification: {
+            type: "string",
+            nullable: true,
+            enum: ["IT_SUPPORT", "OFF_TOPIC", "NEEDS_REVIEW"],
+          },
+          answer: {
+            type: "string",
+            nullable: true,
+            maxLength: 6000,
+          },
+          reason: {
+            type: "string",
+            maxLength: 500,
+          },
+          attempts: {
+            type: "integer",
+            minimum: 1,
+            maximum: 3,
+          },
+          provider: {
+            type: "string",
+          },
+          model: {
+            type: "string",
+          },
+          promptVersion: {
+            type: "string",
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
           },
         },
       },

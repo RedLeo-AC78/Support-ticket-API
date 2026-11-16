@@ -1,6 +1,6 @@
 import { HttpError, objectBody } from "../utils/security.js";
 
-import { TicketStatus } from "../generated/prisma/enums.js";
+import { TicketStatus, AiState } from "../generated/prisma/enums.js";
 
 export function pagination(input: Record<string, unknown>) {
   function integer(key: string, fallback: number, max: number) {
@@ -27,7 +27,15 @@ export function ticketListInput(value: unknown = {}) {
   if (
     Object.keys(query).some(
       (key) =>
-        !["page", "limit", "status", "search", "sortBy", "order"].includes(key),
+        ![
+          "page",
+          "limit",
+          "status",
+          "search",
+          "sortBy",
+          "order",
+          "aiState",
+        ].includes(key),
     )
   )
     throw new HttpError(400, "Paramètre de recherche inconnu.");
@@ -35,6 +43,13 @@ export function ticketListInput(value: unknown = {}) {
   const { page, limit } = pagination(query);
   const sortBy = query.sortBy ?? "id";
   const order = query.order ?? "desc";
+
+  if (
+    query.aiState !== undefined &&
+    (typeof query.aiState !== "string" ||
+      !Object.values(AiState).includes(query.aiState as AiState))
+  )
+    throw new HttpError(400, "État IA invalide.");
 
   if (
     !["id", "createdAt", "updatedAt", "title", "status"].includes(
@@ -68,6 +83,7 @@ export function ticketListInput(value: unknown = {}) {
     sortBy,
     order: order as "asc" | "desc",
     status: query.status as TicketStatus | undefined,
+    aiState: query.aiState as AiState | undefined,
     search: (query.search as string | undefined)?.trim(),
   };
 }

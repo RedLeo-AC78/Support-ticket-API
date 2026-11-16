@@ -12,13 +12,15 @@ import { securityHeaders } from "./middlewares/security-headers.js";
 import { errorHandler, notFound } from "./middlewares/error-handler.js";
 import { rateLimit } from "./middlewares/rate-limit.js";
 import { openapi } from "./docs/openapi.js";
+import type { AiProvider } from "./types/ai.js";
 
 export function createApp(
   db: PrismaClient,
   secret = process.env.JWT_SECRET,
   mailer: Mailer = createMailer(),
+  aiProvider: AiProvider | null = null,
 ) {
-  const dependencies = createContainer(db, secret, mailer);
+  const dependencies = createContainer(db, secret, mailer, aiProvider);
   const app = express();
 
   app.disable("x-powered-by");

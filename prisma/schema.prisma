@@ -25,6 +25,8 @@ model Ticket {
   updatedAt   DateTime     @updatedAt
   ownerId     Int?
   owner       User?        @relation(fields: [ownerId], references: [id])
+  revision    Int          @default(0)
+  ai          TicketAi?
 
   @@index([ownerId])
 }
@@ -97,14 +99,41 @@ model PasswordReset {
 
 // Identifiants conservés sans relation cascade : l'historique survit au compte.
 model AuditLog {
-  id        Int      @id @default(autoincrement())
-  actorId   Int
-  targetId  Int
-  action    String   @db.VarChar(60)
-  before    String?  @db.VarChar(30)
-  after     String?  @db.VarChar(30)
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  actorId    Int
+  targetId   Int
+  targetType String   @default("USER") @db.VarChar(20)
+  action     String   @db.VarChar(60)
+  before     String?  @db.VarChar(30)
+  after      String?  @db.VarChar(30)
+  createdAt  DateTime @default(now())
 
   @@index([targetId, createdAt])
   @@index([createdAt])
+}
+
+enum AiState {
+  PROCESSING
+  ANSWERED
+  OFF_TOPIC
+  NEEDS_REVIEW
+  FAILED
+  CONFIRMED
+}
+
+model TicketAi {
+  ticketId       Int      @id
+  ticket         Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  state          AiState
+  classification String?  @db.VarChar(30)
+  answer         String?  @db.VarChar(6000)
+  reason         String   @db.VarChar(500)
+  provider       String   @db.VarChar(50)
+  model          String   @db.VarChar(100)
+  promptVersion  String   @db.VarChar(30)
+  attemptId      String
+  attempts       Int      @default(1)
+  ticketRevision Int
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
 }

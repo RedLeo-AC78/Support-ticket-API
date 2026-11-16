@@ -1,8 +1,12 @@
 import type { RequestHandler } from "express";
 
 import type { TicketsService } from "../services/tickets.service.js";
+import type { TicketAiService } from "../services/ticket-ai.service.js";
 
-export function ticketsController(service: TicketsService) {
+export function ticketsController(
+  service: TicketsService,
+  ai: TicketAiService,
+) {
   const create: RequestHandler = async (req, res) => {
     const ticket = await service.create(req.body, res.locals.user);
 
@@ -23,5 +27,13 @@ export function ticketsController(service: TicketsService) {
     );
   };
 
-  return { create, list, get, updateStatus };
+  const retryAi: RequestHandler = async (req, res) => {
+    res.json(await ai.analyze(req.params.id, res.locals.user));
+  };
+
+  const feedback: RequestHandler = async (req, res) => {
+    res.json(await ai.feedback(req.params.id, req.body, res.locals.user));
+  };
+
+  return { create, list, get, updateStatus, retryAi, feedback };
 }

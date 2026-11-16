@@ -19,6 +19,7 @@ test("pagination : valeurs bornées, doublons et injection dans le tri refusés"
     sortBy: "id",
     order: "desc",
     status: undefined,
+    aiState: undefined,
     search: undefined,
   });
 
@@ -181,7 +182,7 @@ test("OpenAPI : toutes les routes métier, références et authentification déc
       (n, path) => n + Object.keys(path).length,
       0,
     ),
-    17,
+    19,
   );
 
   function visit(value) {
