@@ -8,7 +8,11 @@ export function ticketsController(
   ai: TicketAiService,
 ) {
   const create: RequestHandler = async (req, res) => {
-    const ticket = await service.create(req.body, res.locals.user);
+    const ticket = await service.create(
+      req.body,
+      res.locals.user,
+      res.locals.sessionId,
+    );
 
     res.location(`/tickets/${ticket.id}`).status(201).json(ticket);
   };
@@ -33,7 +37,9 @@ export function ticketsController(
   };
 
   const retryAi: RequestHandler = async (req, res) => {
-    res.json(await ai.analyze(req.params.id, res.locals.user));
+    res.json(
+      await ai.analyze(req.params.id, res.locals.user, res.locals.sessionId),
+    );
   };
 
   const feedback: RequestHandler = async (req, res) => {

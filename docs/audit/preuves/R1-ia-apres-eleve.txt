@@ -1,0 +1,10 @@
+Ô£ö R1 IA : d├®sactivation avant r├®servation de lÔÇÖanalyse (1823.293ms)
+Ôä╣ {"executedAt":"2026-11-17T15:39:37.796Z","mode":"fixed","serviceSha256":"6e7137ebf25636b7eb0c09face539af91ba7bb450334fbc367c54b019394a61a","revokedAgentMeHttp":401,"pendingOperationHttp":403,"statusBefore":"OPEN","statusAfter":"OPEN","aiRequestAuditRows":0,"providerCalls":0,"aiState":null,"errorCode":"FORBIDDEN"}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 2280.4915

@@ -2,6 +2,8 @@
 
 Date : 17 novembre 2026. Version de départ : commit `ac4bb58` sur develop.
 
+Dernière étape R1 avant réservation IA : non-régression personnelle réussie, 21 tests sans base puis 9 scénarios PostgreSQL, aucun échec. Preuves : audit/preuves/R1-ia-tests-eleve.txt et audit/preuves/R1-ia-tests-db-eleve.txt. Les résultats d'un appel IA déjà lancé et la confirmation du propriétaire restent hors du scénario de réservation testé.
+
 Dernière non-régression personnelle après l'extension R1 tickets : 21 tests sans base réussis (8 scénarios DB ignorés) puis 8 scénarios PostgreSQL réussis ; aucun échec. Preuves : audit/preuves/R1-tickets-tests-eleve.txt et audit/preuves/R1-tickets-tests-db-eleve.txt. Cette étape concerne la désactivation pendant une modification de statut et ne signifie pas que tout le lot R1 est clos.
 
 Le document destiné au rendu écrit est [RAPPORT-AUDIT-SECURITE.md](RAPPORT-AUDIT-SECURITE.md). Il rassemble les fiches et leurs analyses rédigées ; ce LOT8 reste le suivi pédagogique de l'audit.

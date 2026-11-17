@@ -143,3 +143,17 @@ Le correctif initial concernait les invitations. Une extension personnelle du te
 ### Résultat personnel R1 tickets après correction
 
 Le 17 novembre 2026 à 14:50:08 UTC, l’élève a rejoué la désactivation pendant une modification de statut : [preuve après correction](preuves/R1-tickets-apres-eleve.txt). La session révoquée obtient 401 ; la modification en cours est refusée avec 403 ; le ticket reste OPEN et aucune trace de modification réussie n’est créée. Un test réussi, zéro échec. La suite PostgreSQL passe à huit scénarios avec ce contrôle ; la non-régression complète après ce correctif reste à exécuter. Cette preuve concerne la variante de désactivation testée, pas tous les parcours sensibles de l’application.
+
+## Extension R1 IA : preuve personnelle avant correction
+
+Le 17 novembre 2026 à 15:26:32 UTC (16:26:32 à Paris), l’élève a reproduit l’analyse déclenchée après désactivation : [preuve brute](preuves/R1-ia-avant-eleve.txt). La session de l’agent est refusée (401), mais la requête déjà en cours obtient 200, appelle une fois le fournisseur simulé et enregistre ANSWERED avec une trace TICKET_AI_REQUESTED. Le ticket reste OPEN. Un test réussi, zéro échec en mode vulnerable. Aucun fournisseur réel, dépense ou envoi externe n’a été utilisé. Cette variante prolonge VULN-001 ; elle n’est pas comptée comme une quatrième faille indépendante.
+
+Le script scripts/fix-r1-ai.mjs est préparé pour revalider sous verrou compte, session, permission et périmètre avant réservation. Il distingue l’analyse automatique du ticket de son créateur et la relance réservée aux agents autorisés. À cette étape, il n’est pas exécuté et aucun retest après correction n’est affirmé. Les retours de résultats après un appel déjà réservé et la confirmation du propriétaire restent hors de cette preuve ciblée.
+
+## Retest personnel R1 IA — réservation après désactivation
+
+L’élève a exécuté le correctif scripts/fix-r1-ai.mjs, le formatage et la compilation, puis rejoué le test le 17 novembre 2026 à 15:39:37 UTC (16:39:37 à Paris) : [preuve brute](preuves/R1-ia-apres-eleve.txt). Résultats observés : revokedAgentMeHttp=401, pendingOperationHttp=403, providerCalls=0, aiState=null, aiRequestAuditRows=0 ; ticket OPEN conservé. Bilan : 1 test réussi, zéro échec. L’empreinte du service corrigé est 6e7137ebf25636b7eb0c09face539af91ba7bb450334fbc367c54b019394a61a.
+
+Avant correction, une analyse était lancée malgré la désactivation terminée. J’ai appliqué le contrôle sous verrou de l’acteur, de sa session et de ses permissions avant réservation. Après correction, la demande est refusée avant tout appel au fournisseur simulé et aucune analyse n’est créée. Aucun appel OpenAI ni crédit n’a été utilisé pour ces preuves.
+
+Le test est désormais inclus dans scripts/test-db.mjs avec le comportement corrigé attendu par défaut ; la suite comprend neuf scénarios PostgreSQL. Sa non-régression complète après ce dernier correctif reste à exécuter. Ce résultat couvre la désactivation avant réservation : le retour d’un appel déjà lancé et la confirmation du propriétaire ne sont pas validés par ce scénario. Les mentions précédentes de préparation sont historiques, dépassées pour cette variante par l’exécution constatée ici.

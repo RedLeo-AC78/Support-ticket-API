@@ -12,6 +12,7 @@ const result = spawnSync(
     "tests/audit-login-quota.test.mjs",
     "tests/audit-ticket-status.test.mjs",
     "tests/audit-ticket-revocation.test.mjs",
+    "tests/audit-ai-revocation.test.mjs",
   ],
   {
     env: { ...process.env, RUN_DB_TESTS: "1" },

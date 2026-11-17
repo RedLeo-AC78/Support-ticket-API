@@ -1,5 +1,6 @@
 import type { Prisma } from "../generated/prisma/client.js";
 import { lockUser } from "./users.repository.js";
+import type { Permission } from "../config/permissions.js";
 import { hasPermission } from "../config/permissions.js";
 import { ticketVisibility } from "../config/ticket-access.js";
 import { HttpError } from "../utils/security.js";
@@ -8,6 +9,7 @@ export async function authorizeTicketStatus(
   tx: Prisma.TransactionClient,
   actorId: number,
   sessionId: string,
+  permission: Permission = "tickets:update-status",
 ) {
   if (!(await tx.user.findUnique({ where: { id: actorId } })))
     throw new HttpError(403, "Autorisation révoquée.");
@@ -20,7 +22,7 @@ export async function authorizeTicketStatus(
 
   if (
     actor.status !== "ACTIVE" ||
-    !hasPermission(actor.role, "tickets:update-status") ||
+    !hasPermission(actor.role, permission) ||
     !session ||
     session.userId !== actorId ||
     session.revokedAt ||

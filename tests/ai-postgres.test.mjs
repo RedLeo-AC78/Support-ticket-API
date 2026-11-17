@@ -388,12 +388,28 @@ test(
         };
       },
     });
-    const job = slow.analyze(String(pending.id), users.admin);
+    const job = slow.analyze(
+      String(pending.id),
+      users.admin,
+      (
+        await db.session.findFirstOrThrow({
+          where: { userId: users.admin.id, revokedAt: null },
+        })
+      ).id,
+    );
 
     await ready;
 
     await assert.rejects(
-      slow.analyze(String(pending.id), users.admin),
+      slow.analyze(
+        String(pending.id),
+        users.admin,
+        (
+          await db.session.findFirstOrThrow({
+            where: { userId: users.admin.id, revokedAt: null },
+          })
+        ).id,
+      ),
       (e) => e.status === 409,
     );
 
@@ -450,14 +466,32 @@ test(
     const beforeLegacy = calls;
 
     await assert.rejects(
-      service.analyze(String(legacy.id), users.agent),
+      service.analyze(
+        String(legacy.id),
+        users.agent,
+        (
+          await db.session.findFirstOrThrow({
+            where: { userId: users.agent.id, revokedAt: null },
+          })
+        ).id,
+      ),
       (error) => error.status === 404,
     );
 
     assert.equal(calls, beforeLegacy);
 
     assert.equal(
-      (await service.analyze(String(crashed.id), users.admin)).ai.state,
+      (
+        await service.analyze(
+          String(crashed.id),
+          users.admin,
+          (
+            await db.session.findFirstOrThrow({
+              where: { userId: users.admin.id, revokedAt: null },
+            })
+          ).id,
+        )
+      ).ai.state,
       "ANSWERED",
     );
 
@@ -467,7 +501,15 @@ test(
     });
 
     await assert.rejects(
-      service.analyze(String(crashed.id), users.admin),
+      service.analyze(
+        String(crashed.id),
+        users.admin,
+        (
+          await db.session.findFirstOrThrow({
+            where: { userId: users.admin.id, revokedAt: null },
+          })
+        ).id,
+      ),
       (e) => e.status === 409,
     );
 
@@ -508,7 +550,15 @@ test(
     const disabled = ticketAiService(db, null);
 
     await assert.rejects(
-      disabled.analyze(String(atomic.id), users.admin),
+      disabled.analyze(
+        String(atomic.id),
+        users.admin,
+        (
+          await db.session.findFirstOrThrow({
+            where: { userId: users.admin.id, revokedAt: null },
+          })
+        ).id,
+      ),
       (e) => e.status === 503,
     );
 

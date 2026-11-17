@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { authorizeTicketStatus } from "../repositories/ticket-authorization.js";
 
 import type {
   PrismaClient,
@@ -50,7 +51,12 @@ export function ticketAiService(db: PrismaClient, provider: AiProvider | null) {
     });
   }
 
-  async function analyze(value: string | string[], actor: TicketActor) {
+  async function analyze(
+    value: string | string[],
+    actor: TicketActor,
+    sessionId = "",
+    origin: "creation" | "retry" = "retry",
+  ) {
     const id = ticketId(value);
 
     if (!provider) throw new HttpError(503, "L'assistance IA est désactivée.");
@@ -58,12 +64,23 @@ export function ticketAiService(db: PrismaClient, provider: AiProvider | null) {
     const attemptId = randomUUID();
 
     const ticket = await db.$transaction(async (tx) => {
+      const currentScope = await authorizeTicketStatus(
+        tx,
+        actor.id,
+        sessionId,
+        origin === "creation" ? "tickets:create" : "tickets:update-status",
+      );
       const current = await tx.ticket.findFirst({
-        where: { id, ...ticketVisibility(actor) },
+        where: { id, AND: [ticketVisibility(actor), currentScope] },
         include: { ai: true },
       });
 
       if (!current) throw new HttpError(404, "Ticket introuvable.");
+      if (origin === "creation" && current.ownerId !== actor.id)
+        throw new HttpError(
+          403,
+          "Analyse automatique réservée au ticket du créateur.",
+        );
 
       if (!["OPEN", "IN_PROGRESS"].includes(current.status)) throw conflict();
 

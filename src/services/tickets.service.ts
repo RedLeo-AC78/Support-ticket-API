@@ -22,7 +22,7 @@ export function ticketsService(
   ai?: TicketAiService,
 ) {
   return {
-    create: (input: unknown, actor: Actor) => {
+    create: (input: unknown, actor: Actor, sessionId = "") => {
       const created = repository.create({
         ...createTicketInput(input),
         ownerId: actor.id,
@@ -32,7 +32,12 @@ export function ticketsService(
 
       return created.then(async (ticket) => {
         try {
-          return await ai.analyze(String(ticket.id), actor);
+          return await ai.analyze(
+            String(ticket.id),
+            actor,
+            sessionId,
+            "creation",
+          );
         } catch {
           // Le ticket est déjà créé : ne pas encourager une deuxième création sur erreur IA.
           console.error(

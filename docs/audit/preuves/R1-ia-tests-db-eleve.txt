@@ -1,0 +1,53 @@
+
+> support-ticket-api@1.0.0 test:db
+> npm run build && node --env-file=.env scripts/test-db.mjs
+
+
+> support-ticket-api@1.0.0 build
+> npm run generate && tsc
+
+
+> support-ticket-api@1.0.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+Ô£ö Generated Prisma Client (7.10.1) to .\src\generated\prisma in 73ms
+
+Erreur interne pendant le traitement HTTP.
+Ô£ö PostgreSQL : IA, confirmation, visibilit├®, pannes et concurrence (4638.9929ms)
+Ô£ö R1 IA : d├®sactivation avant r├®servation de lÔÇÖanalyse (3198.2749ms)
+Ôä╣ {"executedAt":"2026-11-17T15:42:45.287Z","mode":"fixed","serviceSha256":"6e7137ebf25636b7eb0c09face539af91ba7bb450334fbc367c54b019394a61a","revokedAgentMeHttp":401,"pendingOperationHttp":403,"statusBefore":"OPEN","statusAfter":"OPEN","aiRequestAuditRows":0,"providerCalls":0,"aiState":null,"errorCode":"FORBIDDEN"}
+Ô£ö VULN-001 : invitation apr├¿s r├®vocation, interleaving HTTP d├®terministe (5492.283ms)
+Ôä╣ {"mode":"fixed","node":"v26.13.0","executedAt":"2026-11-17T15:42:42.776Z","serviceSha256":"35784c670c0dd4623346bd47791629ce4b25ad0fdd34ad36f7b4486a812f2ba3"}
+Ôä╣ {"endpoint":"create","revocation":"disabled","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"create","revocation":"demoted","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"create","revocation":"logout","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"disabled","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"demoted","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"logout","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ô£ö PISTE-002 : quota email consomm├® par des mots de passe invalides (6533.1955ms)
+Ôä╣ {"executedAt":"2026-11-17T15:42:45.249Z","mode":"fixed","routeSha256":"5851349ea074b2abf5d201d8d614850cc627e78839d46c12ee8a46993883df21","baseline":200,"invalidRequests":[400,400,400,400,400,400,400,400,400],"legitimateLoginAfter":200,"retryAfter":null,"code":"SUCCESS"}
+Ôä╣ {"check":"email_quota_preserved","wrongPasswordStatuses":[401,401,401,401,401,401,401,401],"correctPasswordAfterQuota":429,"code":"TOO_MANY_REQUESTS","retryAfter":"896","totalRequests":20}
+Ô£ö R1 : r├®vocation avant modification de statut de ticket (3138.6924ms)
+Ôä╣ {"executedAt":"2026-11-17T15:42:45.135Z","mode":"fixed","repositorySha256":"dbb08f42c3c04723aa03ecf2c6dfebb596cc278f9a3984e9297eb112216cf617","revokedAgentMeHttp":401,"pendingOperationHttp":403,"statusBefore":"OPEN","statusAfter":"OPEN","ticketAuditRows":0,"errorCode":"FORBIDDEN"}
+Erreur interne pendant le traitement HTTP.
+Ô£ö PISTE-003 : tra├ºabilit├® des changements de statut de ticket (3235.0717ms)
+Ôä╣ {"executedAt":"2026-11-17T15:42:44.694Z","mode":"fixed","repositorySha256":"dbb08f42c3c04723aa03ecf2c6dfebb596cc278f9a3984e9297eb112216cf617","actorRole":"AGENT","http":200,"statusBefore":"OPEN","statusAfter":"CLOSED","auditCountBefore":0,"auditCountAfter":1,"matchingAuditRows":1}
+Ôä╣ {"check":"audit_atomicity_and_permissions","userAttemptHttp":403,"auditFailureHttp":500,"code":"INTERNAL_ERROR","statusBeforeFailure":"CLOSED","statusAfterFailure":"CLOSED","revisionUnchanged":true,"auditRowsAfterFailure":1}
+Erreur interne pendant le traitement HTTP.
+Ô£ö PostgreSQL : pagination, filtres, audit atomique et changements de r├┤le (5392.0439ms)
+Ô£ö PostgreSQL : auth, r├┤les, propri├®t├® et rotation concurrente (9535.1934ms)
+├ëchec du traitement email de r├®initialisation.
+├ëchec du traitement email de r├®initialisation.
+Ô£ö PostgreSQL : d├®sactivation, r├®activation, reset, concurrence et dernier Super Admin (7792.6759ms)
+Ôä╣ tests 9
+Ôä╣ suites 0
+Ôä╣ pass 9
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 10419.7254
