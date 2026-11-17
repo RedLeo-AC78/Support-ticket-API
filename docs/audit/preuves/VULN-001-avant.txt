@@ -1,0 +1,17 @@
+✔ VULN-001 : invitation après révocation, interleaving HTTP déterministe (4475.3409ms)
+ℹ {"mode":"vulnerable","node":"v26.13.0","executedAt":"2026-11-17T09:40:18.872Z","serviceSha256":"a53b43e3ca083fd09ec2f3b7ee9464f76bc5889720a1accca6cd59d1c6b88be8"}
+ℹ {"endpoint":"create","revocation":"disabled","http":201,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+ℹ IMPACT_CONFIRME : nouveau SUPER_ADMIN ACTIVE après désactivation de son créateur ; HTTP /auth/me=200.
+ℹ {"endpoint":"create","revocation":"demoted","http":201,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+ℹ {"endpoint":"create","revocation":"logout","http":201,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+ℹ {"endpoint":"resend","revocation":"disabled","http":200,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+ℹ {"endpoint":"resend","revocation":"demoted","http":200,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+ℹ {"endpoint":"resend","revocation":"logout","http":200,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4930.5556

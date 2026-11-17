@@ -8,6 +8,8 @@ const result = spawnSync(
     "tests/reset-postgres.test.mjs",
     "tests/hardening-postgres.test.mjs",
     "tests/ai-postgres.test.mjs",
+    "tests/audit-invitations.test.mjs",
+    "tests/audit-login-quota.test.mjs",
   ],
   {
     env: { ...process.env, RUN_DB_TESTS: "1" },

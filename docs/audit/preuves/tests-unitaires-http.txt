@@ -1,0 +1,62 @@
+
+> support-ticket-api@1.0.0 test
+> npm run build && node --test tests/*.test.mjs
+
+
+> support-ticket-api@1.0.0 build
+> npm run generate && tsc
+
+
+> support-ticket-api@1.0.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.1 -> 8.0.0-rc.34                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 93ms
+
+﹣ PostgreSQL : IA, confirmation, visibilité, pannes et concurrence (1.0071ms) # SKIP
+✔ IA : vérifier le format et borner les réponses du fournisseur (2.8757ms)
+✔ OpenAI : désactivé par défaut, configuration explicite requise (0.4831ms)
+✔ OpenAI : transport simulé, seulement titre/description, format structuré, aucun outil (56.5333ms)
+✔ OpenAI : erreurs, refus, troncature et réponses trop grandes neutralisés (5.6699ms)
+✔ OpenAI : quota horaire et parallélisme bornés avant l'appel (7.4365ms)
+✔ IA : les secrets évidents sont orientés vers un humain avant tout envoi (0.6538ms)
+✔ HTTP : accès anonyme et faux JWT refusés avant tout accès DB (296.2718ms)
+﹣ VULN-001 : invitation après révocation, interleaving HTTP déterministe (0.9872ms) # SKIP
+﹣ PostgreSQL : pagination, filtres, audit atomique et changements de rôle (1.0102ms) # SKIP
+✔ pagination : valeurs bornées, doublons et injection dans le tri refusés (4.2794ms)
+✔ limiteur : clés indépendantes et expiration de la fenêtre (2.2057ms)
+✔ erreur inattendue : aucune fuite de détails (0.8655ms)
+✔ HTTP : erreurs communes, JSON invalide, taille, force brute et limite globale (534.7566ms)
+✔ OpenAPI : toutes les routes métier, références et authentification décrites (1.3107ms)
+✔ JWT : signature, expiration, issuer, audience, algorithme et claims (52.0039ms)
+✔ Brevo : requête API correcte, sans envoi réel (48.0163ms)
+✔ Brevo : erreurs neutralisées, configuration vérifiée (2.5001ms)
+✔ seul SUPER_ADMIN pourra inviter et désactiver les comptes (1.1729ms)
+✔ un agent traite les tickets sans administrer les comptes ; un user reste limité (0.2464ms)
+﹣ PostgreSQL : auth, rôles, propriété et rotation concurrente (1.1424ms) # SKIP
+﹣ PostgreSQL : désactivation, réactivation, reset, concurrence et dernier Super Admin (1.3904ms) # SKIP
+✔ scrypt : sel unique, vérification et espaces préservés (2718.3107ms)
+✔ validation des identifiants et tokens aléatoires (1.7387ms)
+✔ service tickets sans Express : propriétaire imposé et validation (2.2894ms)
+✔ service tickets sans Express : visibilité et ticket absent (0.9064ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 5
+ℹ todo 0
+ℹ duration_ms 3206.9126

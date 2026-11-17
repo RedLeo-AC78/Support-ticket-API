@@ -14,11 +14,23 @@ export function usersController(
   const create: RequestHandler = async (req, res) => {
     res
       .status(201)
-      .json(await invitations.create(req.body, res.locals.user.id));
+      .json(
+        await invitations.create(
+          req.body,
+          res.locals.user.id,
+          res.locals.sessionId,
+        ),
+      );
   };
 
   const resend: RequestHandler = async (req, res) => {
-    res.json(await invitations.resend(req.params.id, res.locals.user.id));
+    res.json(
+      await invitations.resend(
+        req.params.id,
+        res.locals.user.id,
+        res.locals.sessionId,
+      ),
+    );
   };
 
   const changeStatus: RequestHandler = async (req, res) => {

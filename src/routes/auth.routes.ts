@@ -4,7 +4,12 @@ import type { authController } from "../controllers/auth.controller.js";
 
 import { rateLimit } from "../middlewares/rate-limit.js";
 
-import { digest } from "../utils/security.js";
+import {
+  digest,
+  emailValue,
+  objectBody,
+  passwordValue,
+} from "../utils/security.js";
 
 export function authRoutes(
   controller: ReturnType<typeof authController>,
@@ -20,9 +25,20 @@ export function authRoutes(
         .toLowerCase(),
     );
 
+  // La limite IP protège aussi les corps invalides ; le quota email suit la validation.
+  const validateLoginBody: RequestHandler = (req, _res, next) => {
+    const body = objectBody(req.body, ["email", "password"]);
+
+    emailValue(body.email);
+    passwordValue(body.password);
+
+    next();
+  };
+
   router.post(
     "/login",
     byIp,
+    validateLoginBody,
     rateLimit(10, 15 * 60 * 1000, emailKey),
     controller.login,
   );

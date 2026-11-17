@@ -1,0 +1,16 @@
+Ô£ö VULN-001 : invitation apr├¿s r├®vocation, interleaving HTTP d├®terministe (3600.0153ms)
+Ôä╣ {"mode":"fixed","node":"v26.13.0","executedAt":"2026-11-17T09:58:34.461Z","serviceSha256":"35784c670c0dd4623346bd47791629ce4b25ad0fdd34ad36f7b4486a812f2ba3"}
+Ôä╣ {"endpoint":"create","revocation":"disabled","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"create","revocation":"demoted","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"create","revocation":"logout","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"disabled","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"demoted","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"logout","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 3978.8247

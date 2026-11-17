@@ -1,0 +1,42 @@
+
+> support-ticket-api@1.0.0 test:db
+> npm run build && node --env-file=.env scripts/test-db.mjs
+
+
+> support-ticket-api@1.0.0 build
+> npm run generate && tsc
+
+
+> support-ticket-api@1.0.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 84ms
+
+Erreur interne pendant le traitement HTTP.
+✔ PostgreSQL : IA, confirmation, visibilité, pannes et concurrence (4423.0201ms)
+✔ VULN-001 : invitation après révocation, interleaving HTTP déterministe (5553.0498ms)
+ℹ {"mode":"fixed","node":"v26.13.0","executedAt":"2026-11-17T09:41:47.448Z","serviceSha256":"35784c670c0dd4623346bd47791629ce4b25ad0fdd34ad36f7b4486a812f2ba3"}
+ℹ {"endpoint":"create","revocation":"disabled","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+ℹ {"endpoint":"create","revocation":"demoted","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+ℹ {"endpoint":"create","revocation":"logout","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+ℹ {"endpoint":"resend","revocation":"disabled","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+ℹ {"endpoint":"resend","revocation":"demoted","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+ℹ {"endpoint":"resend","revocation":"logout","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Erreur interne pendant le traitement HTTP.
+✔ PostgreSQL : pagination, filtres, audit atomique et changements de rôle (5392.4356ms)
+✔ PostgreSQL : auth, rôles, propriété et rotation concurrente (9616.0409ms)
+Échec du traitement email de réinitialisation.
+Échec du traitement email de réinitialisation.
+✔ PostgreSQL : désactivation, réactivation, reset, concurrence et dernier Super Admin (8123.3279ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10301.4019

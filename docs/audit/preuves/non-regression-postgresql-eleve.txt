@@ -1,0 +1,42 @@
+
+> support-ticket-api@1.0.0 test:db
+> npm run build && node --env-file=.env scripts/test-db.mjs
+
+
+> support-ticket-api@1.0.0 build
+> npm run generate && tsc
+
+
+> support-ticket-api@1.0.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+Ô£ö Generated Prisma Client (7.10.1) to .\src\generated\prisma in 72ms
+
+Erreur interne pendant le traitement HTTP.
+Ô£ö PostgreSQL : IA, confirmation, visibilit├®, pannes et concurrence (3573.3639ms)
+Ô£ö VULN-001 : invitation apr├¿s r├®vocation, interleaving HTTP d├®terministe (4782.4874ms)
+Ôä╣ {"mode":"fixed","node":"v26.13.0","executedAt":"2026-11-17T11:34:21.133Z","serviceSha256":"35784c670c0dd4623346bd47791629ce4b25ad0fdd34ad36f7b4486a812f2ba3"}
+Ôä╣ {"endpoint":"create","revocation":"disabled","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"create","revocation":"demoted","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"create","revocation":"logout","http":403,"destinationExists":false,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"disabled","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"demoted","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Ôä╣ {"endpoint":"resend","revocation":"logout","http":403,"destinationExists":true,"activeCodes":0,"emailsCaptured":0,"auditWrites":0}
+Erreur interne pendant le traitement HTTP.
+Ô£ö PostgreSQL : pagination, filtres, audit atomique et changements de r├┤le (4550.4845ms)
+Ô£ö PostgreSQL : auth, r├┤les, propri├®t├® et rotation concurrente (8802.9694ms)
+├ëchec du traitement email de r├®initialisation.
+├ëchec du traitement email de r├®initialisation.
+Ô£ö PostgreSQL : d├®sactivation, r├®activation, reset, concurrence et dernier Super Admin (7397.6112ms)
+Ôä╣ tests 5
+Ôä╣ suites 0
+Ôä╣ pass 5
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 9362.8357

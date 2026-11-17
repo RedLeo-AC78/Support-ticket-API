@@ -1,0 +1,17 @@
+Ô£ö VULN-001 : invitation apr├¿s r├®vocation, interleaving HTTP d├®terministe (4298.2729ms)
+Ôä╣ {"mode":"vulnerable","node":"v26.13.0","executedAt":"2026-11-17T10:34:16.361Z","serviceSha256":"ade8bde3903322df0d3189b59d1f1baa3b03c0e96b13e5cb18f1f07af7ecfdce"}
+Ôä╣ {"endpoint":"create","revocation":"disabled","http":201,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+Ôä╣ IMPACT_CONFIRME : nouveau SUPER_ADMIN ACTIVE apr├¿s d├®sactivation de son cr├®ateur ; HTTP /auth/me=200.
+Ôä╣ {"endpoint":"create","revocation":"demoted","http":201,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+Ôä╣ {"endpoint":"create","revocation":"logout","http":201,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+Ôä╣ {"endpoint":"resend","revocation":"disabled","http":200,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+Ôä╣ {"endpoint":"resend","revocation":"demoted","http":200,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+Ôä╣ {"endpoint":"resend","revocation":"logout","http":200,"destinationExists":true,"activeCodes":1,"emailsCaptured":1,"auditWrites":1}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 4697.599

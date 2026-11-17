@@ -147,7 +147,7 @@ test("HTTP : erreurs communes, JSON invalide, taille, force brute et limite glob
 
   assert.equal(r.status, 413);
 
-  for (let i = 0; i < 10; i++)
+  for (let i = 0; i < 30; i++)
     assert.equal(
       (
         await post(

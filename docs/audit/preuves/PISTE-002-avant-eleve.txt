@@ -1,0 +1,10 @@
+Ô£ö PISTE-002 : quota email consomm├® par des mots de passe invalides (1382.6824ms)
+Ôä╣ {"executedAt":"2026-11-17T11:20:35.888Z","mode":"vulnerable","routeSha256":"7abc1a9f1b22afc340c746d7aafc5463fdc46598b40707d87b0b66423174eaf5","baseline":200,"invalidRequests":[400,400,400,400,400,400,400,400,400],"legitimateLoginAfter":429,"retryAfter":"900","code":"TOO_MANY_REQUESTS"}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 1968.3691

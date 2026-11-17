@@ -2,6 +2,7 @@ import type { PrismaClient } from "../generated/prisma/client.js";
 import { Role } from "../generated/prisma/enums.js";
 
 import { lockUser, publicUser } from "../repositories/users.repository.js";
+import { authorizeInvitation } from "../repositories/invitation-authorization.js";
 
 import type { Mailer } from "./mail.service.js";
 
@@ -47,7 +48,7 @@ async function deliver(mailer: Mailer, email: string, token: string) {
 export function invitationsService(db: PrismaClient, mailer: Mailer) {
   let activeHashes = 0;
 
-  async function create(input: unknown, actorId: number) {
+  async function create(input: unknown, actorId: number, sessionId: string) {
     const body = objectBody(input, ["email", "role"]),
       email = emailValue(body.email);
     const role = body.role === undefined ? "USER" : body.role;
@@ -60,6 +61,8 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
 
     const token = newToken();
     const user = await db.$transaction(async (tx) => {
+      await authorizeInvitation(tx, actorId, sessionId);
+
       const created = await tx.user.create({
         data: {
           email,
@@ -92,15 +95,19 @@ export function invitationsService(db: PrismaClient, mailer: Mailer) {
     return { user, invitation: delivery };
   }
 
-  async function resend(value: string | string[], actorId: number) {
+  async function resend(
+    value: string | string[],
+    actorId: number,
+    sessionId: string,
+  ) {
     const id = idValue(value),
       token = newToken();
     const user = await db.$transaction(async (tx) => {
+      await authorizeInvitation(tx, actorId, sessionId, id);
+
       const existing = await tx.user.findUnique({ where: { id } });
 
       if (!existing) throw new HttpError(404, "Compte introuvable.");
-
-      await lockUser(tx, id);
 
       const current = await tx.user.findUniqueOrThrow({
         where: { id },
