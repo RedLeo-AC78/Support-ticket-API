@@ -4,7 +4,7 @@
 **Groupe :** Adam Cheria / Jacques OWONE.  
 **Date de rédaction :** 17 novembre 2026.  
 **Version de référence avant correction :** commit `ac4bb58`, branche `develop`.  
-**État du rapport :** audit en cours ; deux vulnérabilités documentées à ce stade.
+**État du rapport :** audit en cours ; trois constats de sécurité documentés à ce stade.
 
 ## Objectif
 
@@ -24,6 +24,8 @@ Le réseau de l'école, GitHub, Brevo et OpenAI ne sont pas des cibles de cet au
 |---|---|---|---|
 | VULN-001 | Invitation après révocation des droits de l'auteur | Élevée, dans les conditions précisées dans la fiche | Reproduction personnelle avant correction et retest réussis |
 | VULN-002 | Quota email consommé par des mots de passe manifestement invalides | Faible dans le contexte testé | Reproduction personnelle, correction exécutée et retest ciblé réussi |
+
+| VULN-003 | Statut du ticket modifié sans journalisation | Faible : traçabilité | Reproduction, retest et contrôles de panne/permission réussis |
 
 Les six cas de VULN-001 sont des variantes d'une même faille, et ne sont pas comptés comme six vulnérabilités différentes.
 
@@ -255,7 +257,99 @@ J'ai reproduit un blocage temporaire de connexion : après des mots de passe tro
 
 Référence générale : [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), compromis entre verrouillage de compte et déni de service. La preuve propre au projet est le test lié ci-dessus.
 
+## VULN-003 — Changement de statut de ticket sans trace d'audit
+
+### Identifiant
+
+VULN-003, issue de PISTE-003. Reproduction personnelle le 17 novembre 2026 à 13:19:15 UTC (14:19:15 à Paris). Correctif exécuté par l’élève ; compilation réussie et retest ciblé réussi le 17 novembre 2026 à 13:56:58 UTC (14:56:58 à Paris).
+
+### Nom de la vulnérabilité
+
+Lacune de traçabilité : une modification manuelle du statut d'un ticket ne produit aucune entrée dans le journal applicatif.
+
+### Description
+
+La route contrôle le rôle de l'acteur. Le dépôt modifie le statut et invalide l'analyse IA dans une transaction, mais n'insère pas d'AuditLog. Le champ updatedAt et la revision du ticket indiquent une modification sans conserver son auteur ni la transition. Les actions de confirmation IA et les changements de rôle disposent déjà de telles traces.
+
+### Localisation
+
+PATCH /tickets/:id/status ; updateStatus dans src/repositories/tickets.repository.ts et src/services/tickets.service.ts. L'identifiant de l'acteur authentifié n'est pas transmis au dépôt dans la version testée.
+
+### Criticité
+
+**Faible dans le contexte scolaire** : défaut de traçabilité d'une action autorisée. Un agent peut modifier un ticket sans journal applicatif attribuable, ce qui complique une enquête ou une contestation. Le scénario ne démontre aucun accès sans permission, aucun effacement d'un journal existant ni aucune absence de trace dans un éventuel système externe. Il s'agit d'une lacune de contrôle de sécurité, distincte d'une prise de contrôle de compte.
+
+### Scénario d'exploitation
+
+Un agent fictif s'authentifie et ferme un ticket OPEN appartenant à un utilisateur fictif. Le serveur accepte la modification et la persiste. Le test compare ensuite le journal avant/après et recherche la trace du changement. Un acteur ayant déjà la permission peut ainsi effectuer une action qui ne sera pas attribuable par le journal applicatif.
+
+### Preuve d'exploitation
+
+[Sortie brute personnelle](audit/preuves/PISTE-003-avant-eleve.txt), nom conservé depuis la phase de piste. Test : tests/audit-ticket-status.test.mjs. Il traverse réellement HTTP et PostgreSQL, dans un schéma temporaire, sans appel IA ou email.
+
+```json
+{"actorRole":"AGENT","http":200,"statusBefore":"OPEN","statusAfter":"CLOSED","auditCountBefore":0,"auditCountAfter":0,"matchingAuditRows":0}
+```
+
+Mode vulnerable : 1 test réussi, 0 échec. Le test réussit parce qu'il constate le défaut attendu. Le total du journal reste à zéro : le résultat n'est donc pas uniquement dû à une recherche sur un mauvais nom d'action. L'empreinte du dépôt testée est 9a18910a02620aa27b9d60fa9de4e716e8add02b5a19846e601f9688a0c75e80.
+
+### Impact
+
+Impossibilité de retrouver l'auteur et l'ancien statut à partir du journal applicatif. Le changement reste visible dans l'état actuel du ticket ; aucune suppression du ticket ou de données d'utilisateur n'est démontrée.
+
+### Correction appliquée par l’élève
+
+L’élève a exécuté scripts/fix-vuln003.mjs, puis le formatage et la compilation. Le correctif transmet actor.id, issu du compte authentifié, jusqu'au dépôt. L'identité ne vient pas du JSON envoyé par le client. Le dépôt verrouille le ticket avant lecture de l'ancien statut, puis modifie le statut, invalide l'analyse IA et écrit l'audit dans la même transaction. Le verrou évite de journaliser une ancienne valeur périmée lors de modifications concurrentes.
+
+Avant, extrait simplifié :
+
+```typescript
+db.$transaction(async (tx) => {
+  const ticket = await tx.ticket.update({ /* changement de statut */ });
+  await tx.ticketAi.updateMany({ /* invalidation */ });
+  return ticket;
+});
+```
+
+Après correction, étapes essentielles :
+
+```typescript
+const previous = await tx.ticket.update({
+  where: { ...scope, id }, data: { id }, select: { status: true },
+}); // verrou de ligne, sans changer l'identifiant
+// Changement du statut et invalidation IA, dans la même transaction.
+await tx.auditLog.create({ data: {
+  actorId, targetId: id, targetType: "TICKET",
+  action: "TICKET_STATUS_CHANGED", before: previous.status, after: status,
+} });
+```
+
+Les extraits abrègent les données inchangées ; le script conserve les modifications effectivement appliquées. Le retest personnel ci-dessous confirme la création de la trace. Pas de migration nécessaire : la table d'audit existe déjà.
+
+### Retest
+
+Retest personnel le 17 novembre 2026 à 13:56:58 UTC : [sortie brute](audit/preuves/VULN-003-apres-eleve.txt). HTTP 200, OPEN → CLOSED, auditCountBefore=0, auditCountAfter=1, matchingAuditRows=1 ; 1 test réussi, 0 échec. Les assertions vérifient également actorId de l’agent, before=OPEN et after=CLOSED. Le test a ensuite été complété pour vérifier un refus USER (403) et un échec provoqué du journal (500 avec statut et revision inchangés). Le contrôle complémentaire a ensuite été exécuté personnellement le 17 novembre 2026 à 14:08:23 UTC (15:08:23 à Paris) : [preuve distincte](audit/preuves/VULN-003-atomicite-eleve.txt). Résultats : userAttemptHttp=403, auditFailureHttp=500, statut CLOSED conservé, revisionUnchanged=true et auditRowsAfterFailure=1. Le changement et la tentative de nouvelle trace sont donc annulés ensemble lors de la panne provoquée. Bilan : 1 test réussi, 0 échec. Le log d’erreur interne est attendu pour ce scénario.
+
+### Commentaire rédigé
+
+J'ai fermé un ticket avec un compte AGENT fictif dans le test local. La modification a été acceptée et enregistrée, mais le nombre de traces d'audit est resté à zéro. Le problème concerne donc l'attribution des actions et non les permissions d'accès. Le correctif préparé ajoute l'identité de l'auteur et les statuts avant/après dans la transaction. J’ai appliqué le correctif et rejoué le scénario : la modification réussit et une trace identifie désormais l’agent et les statuts OPEN puis CLOSED. J’ai également provoqué une panne du journal dans le schéma temporaire : la modification a été annulée, le statut et la version sont restés inchangés. Un USER a reçu 403 pour la même route, ce qui confirme le maintien de la permission dans le cas testé.
+
 ## Bilan provisoire
+
+### Dernière non-régression après VULN-003
+
+Le 17 novembre 2026, l'élève a exécuté et enregistré les deux suites après le correctif VULN-003 :
+
+- [Tests sans base](audit/preuves/VULN-003-tests-eleve.txt) : 28 tests déclarés, 21 réussis, 7 scénarios PostgreSQL ignorés volontairement, 0 échec.
+- [Tests PostgreSQL](audit/preuves/VULN-003-tests-db-eleve.txt) : 7 scénarios exécutés, 7 réussis, 0 échec, 0 scénario ignoré. Les diagnostics des tests d'audit sont datés autour de 14:17 UTC.
+
+Les trois contrôles d'audit sont maintenant inclus dans la suite PostgreSQL. Les erreurs internes et email affichées correspondent aux pannes provoquées pour les contrôles de rollback et de traitement d'erreur. Les preuves brutes sont conservées sans réécriture.
+
+Cette exécution complète remplace le statut « suite étendue en attente » des étapes préparatoires ci-dessous : les bilans de cinq ou six scénarios décrivent les versions antérieures de la suite, et non le dernier résultat. La dernière version locale a passé les sept scénarios. Le prochain lancement sur GitHub après push reste à vérifier séparément.
+
+### PISTE-003 — Traçabilité des statuts des tickets
+
+Après le commit des deux premiers correctifs, une nouvelle lecture du code a repéré l'absence apparente de journalisation dans PATCH /tickets/:id/status. [Fiche de piste](audit/PISTE-003.md). Le test a ensuite été exécuté personnellement le 17 novembre 2026 à 13:19:15 UTC : modification HTTP 200 persistée, zéro trace d’audit avant/après. La piste est devenue VULN-003, détaillée ci-dessus. Cette lacune potentielle concerne l'attribution d'une action autorisée ; elle n'est pas présentée comme un contournement des permissions et reste classée comme lacune de traçabilité de criticité faible. Le correctif a depuis été exécuté par l’élève, puis les retests ciblés et le contrôle de panne ont réussi.
 
 Complément de non-régression préparé pour VULN-002 : tests/audit-login-quota.test.mjs vérifie maintenant aussi le quota sur les mots de passe de forme valide (huit refus 401, puis un refus 429 attendu). Son exécution personnelle a réussi le 17 novembre 2026 à 12:52:01 UTC, avec une preuve brute conservée et liée dans la fiche. Le test attend le comportement corrigé par défaut et est ajouté à la suite PostgreSQL, qui comporte désormais six scénarios ; le résultat personnel précédent de cinq succès reste celui de la suite antérieure, sans modification de sa preuve.
 

@@ -1648,6 +1648,7 @@ export const openapi = {
               "TICKET_AI_COMPLETED",
               "TICKET_AI_CONFIRMED",
               "TICKET_AI_REJECTED",
+              "TICKET_STATUS_CHANGED",
             ],
           },
           before: {

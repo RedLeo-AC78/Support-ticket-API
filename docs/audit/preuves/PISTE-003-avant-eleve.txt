@@ -1,0 +1,10 @@
+Ô£ö PISTE-003 : tra├ºabilit├® des changements de statut de ticket (1447.6805ms)
+Ôä╣ {"executedAt":"2026-11-17T13:19:15.768Z","mode":"vulnerable","repositorySha256":"9a18910a02620aa27b9d60fa9de4e716e8add02b5a19846e601f9688a0c75e80","actorRole":"AGENT","http":200,"statusBefore":"OPEN","statusAfter":"CLOSED","auditCountBefore":0,"auditCountAfter":0,"matchingAuditRows":0}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 1939.8119

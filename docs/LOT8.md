@@ -121,3 +121,9 @@ Le programme réalise les tests, mais l'élève doit pouvoir expliquer la chrono
 - Aucun changement de schéma, de rôle ou d'URL ; pas de migration nécessaire.
 
 Pour utiliser le correctif local, arrêter le serveur puis lancer `npm.cmd run build` et `npm.cmd start`. Aucun commit ni push n'est effectué pour cette étape.
+
+## VULN-003 : fin des contrôles ciblés
+
+Mise à jour finale de cette étape : l'élève a exécuté la suite complète étendue. Preuves : audit/preuves/VULN-003-tests-eleve.txt (21 succès, 7 DB ignorés, 0 échec) et audit/preuves/VULN-003-tests-db-eleve.txt (7 succès, aucun échec ni scénario ignoré). Les mentions de suite étendue en attente dans les notes préparatoires sont désormais dépassées par cette exécution.
+
+Preuve personnelle avant correction : audit/preuves/PISTE-003-avant-eleve.txt. Retest : audit/preuves/VULN-003-apres-eleve.txt. Contrôle d’atomicité et de permission réussi le 17 novembre à 14:08:23 UTC : audit/preuves/VULN-003-atomicite-eleve.txt (403 USER, 500 provoqué, statut/version inchangés, une seule trace conservée). Le test corrigé est désormais ajouté à scripts/test-db.mjs avec mode fixed par défaut ; la suite passe à sept scénarios. La suite complète de sept scénarios reste à exécuter.

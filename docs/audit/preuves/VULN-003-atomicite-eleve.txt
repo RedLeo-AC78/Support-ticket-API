@@ -1,0 +1,12 @@
+Erreur interne pendant le traitement HTTP.
+Ô£ö PISTE-003 : tra├ºabilit├® des changements de statut de ticket (1762.1578ms)
+Ôä╣ {"executedAt":"2026-11-17T14:08:23.657Z","mode":"fixed","repositorySha256":"8ad6b62c7145116d8e57781bbaaf8bfb3e49e7c264ba146f1d7f95581dd9f4ce","actorRole":"AGENT","http":200,"statusBefore":"OPEN","statusAfter":"CLOSED","auditCountBefore":0,"auditCountAfter":1,"matchingAuditRows":1}
+Ôä╣ {"check":"audit_atomicity_and_permissions","userAttemptHttp":403,"auditFailureHttp":500,"code":"INTERNAL_ERROR","statusBeforeFailure":"CLOSED","statusAfterFailure":"CLOSED","revisionUnchanged":true,"auditRowsAfterFailure":1}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 2173.4364

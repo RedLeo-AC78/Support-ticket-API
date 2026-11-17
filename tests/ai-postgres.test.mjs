@@ -397,7 +397,12 @@ test(
       (e) => e.status === 409,
     );
 
-    await ticketsRepository(db).updateStatus(pending.id, {}, "CLOSED");
+    await ticketsRepository(db).updateStatus(
+      pending.id,
+      {},
+      "CLOSED",
+      users.admin.id,
+    );
 
     release();
 

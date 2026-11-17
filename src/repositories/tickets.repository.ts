@@ -62,8 +62,16 @@ export function ticketsRepository(db: PrismaClient) {
       id: number,
       scope: Prisma.TicketWhereInput,
       status: TicketStatus,
+      actorId: number,
     ) =>
       db.$transaction(async (tx) => {
+        // Mise à jour sans changement : verrouiller le ticket avant de lire son statut.
+        const previous = await tx.ticket.update({
+          where: { ...scope, id },
+          data: { id },
+          select: { status: true },
+        });
+
         const ticket = await tx.ticket.update({
           where: { ...scope, id },
           data: { status, revision: { increment: 1 } },
@@ -76,6 +84,17 @@ export function ticketsRepository(db: PrismaClient) {
             answer: null,
             reason:
               "Statut modifié par un agent : la proposition IA précédente n'est plus active.",
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            actorId,
+            targetId: id,
+            targetType: "TICKET",
+            action: "TICKET_STATUS_CHANGED",
+            before: previous.status,
+            after: status,
           },
         });
 

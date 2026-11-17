@@ -59,6 +59,7 @@ export function ticketsService(
         ticketId(value),
         visibility(actor),
         ticketStatusInput(input),
+        actor.id,
       ),
   };
 }
