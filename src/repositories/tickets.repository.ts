@@ -1,6 +1,8 @@
 import type { PrismaClient, Prisma } from "../generated/prisma/client.js";
 import type { TicketStatus } from "../generated/prisma/enums.js";
 
+import { authorizeTicketStatus } from "./ticket-authorization.js";
+
 import type { TicketListInput } from "../validators/list.validation.js";
 
 export function ticketsRepository(db: PrismaClient) {
@@ -63,17 +65,23 @@ export function ticketsRepository(db: PrismaClient) {
       scope: Prisma.TicketWhereInput,
       status: TicketStatus,
       actorId: number,
+      sessionId: string,
     ) =>
       db.$transaction(async (tx) => {
+        const currentScope = await authorizeTicketStatus(
+          tx,
+          actorId,
+          sessionId,
+        );
         // Mise à jour sans changement : verrouiller le ticket avant de lire son statut.
         const previous = await tx.ticket.update({
-          where: { ...scope, id },
+          where: { AND: [scope, currentScope], id },
           data: { id },
           select: { status: true },
         });
 
         const ticket = await tx.ticket.update({
-          where: { ...scope, id },
+          where: { AND: [scope, currentScope], id },
           data: { status, revision: { increment: 1 } },
         });
 

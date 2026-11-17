@@ -135,3 +135,11 @@ Retest également exécuté personnellement par l'élève le 17 novembre 2026 à
 Les six requêtes donnent 403. Aucune nouvelle invitation, aucun email et aucune écriture d'audit USER_INVITED/INVITATION_REISSUED. Le destinataire de resend existait avant le test ; sa présence ne représente pas un nouveau compte créé par l'attaque.
 
 Les invitations légitimes sont encore testées par postgres.test.mjs. Les autres parcours restent vérifiés par la suite complète. Le test ciblé est désormais inclus dans `npm.cmd run test:db`, donc dans GitHub Actions au prochain push.
+
+## Extension R1 — portée du correctif sur les tickets
+
+Le correctif initial concernait les invitations. Une extension personnelle du test, le 17 novembre 2026 à 14:35:34 UTC, montre que PATCH /tickets/:id/status peut encore terminer après la désactivation de l’agent : contrôle de session suivant refusé (401), mais opération en cours acceptée (200), ticket fermé. [Preuve](preuves/R1-tickets-avant-eleve.txt) et [détail de l’extension](R1-REVOCATION-TICKETS.md). Cette variante partage la cause de VULN-001 et n’est pas comptée comme une nouvelle faille indépendante. Le correctif des invitations reste validé ; la variante de désactivation sur la modification de statut de ticket a ensuite été corrigée et retestée personnellement avec succès.
+
+### Résultat personnel R1 tickets après correction
+
+Le 17 novembre 2026 à 14:50:08 UTC, l’élève a rejoué la désactivation pendant une modification de statut : [preuve après correction](preuves/R1-tickets-apres-eleve.txt). La session révoquée obtient 401 ; la modification en cours est refusée avec 403 ; le ticket reste OPEN et aucune trace de modification réussie n’est créée. Un test réussi, zéro échec. La suite PostgreSQL passe à huit scénarios avec ce contrôle ; la non-régression complète après ce correctif reste à exécuter. Cette preuve concerne la variante de désactivation testée, pas tous les parcours sensibles de l’application.

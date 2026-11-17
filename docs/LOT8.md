@@ -2,7 +2,11 @@
 
 Date : 17 novembre 2026. Version de départ : commit `ac4bb58` sur develop.
 
+Dernière non-régression personnelle après l'extension R1 tickets : 21 tests sans base réussis (8 scénarios DB ignorés) puis 8 scénarios PostgreSQL réussis ; aucun échec. Preuves : audit/preuves/R1-tickets-tests-eleve.txt et audit/preuves/R1-tickets-tests-db-eleve.txt. Cette étape concerne la désactivation pendant une modification de statut et ne signifie pas que tout le lot R1 est clos.
+
 Le document destiné au rendu écrit est [RAPPORT-AUDIT-SECURITE.md](RAPPORT-AUDIT-SECURITE.md). Il rassemble les fiches et leurs analyses rédigées ; ce LOT8 reste le suivi pédagogique de l'audit.
+
+Planification de la prochaine passe, après le commit d1f1ccc : [inventaire du travail restant](audit/INVENTAIRE-RESTANT.md), préparé avant toute nouvelle correction. Trois groupes de risques et un contrôle de dépendances restent à vérifier ; ils ne constituent pas quatre nouvelles failles confirmées.
 
 Copie avant correction préparée le 17 novembre : work/audit-vuln001-before-ac4bb58 (extraction git archive de ac4bb58 et copie du test ciblé). Aucun .env copié et aucune exploitation exécutée lors de cette préparation. Installation, compilation et reproduction personnelle réalisées ensuite ; preuve dans audit/preuves/VULN-001-avant-eleve.txt (17 novembre, 10:34:16 UTC). Ne pas démarrer son serveur.
 

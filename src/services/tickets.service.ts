@@ -54,12 +54,18 @@ export function ticketsService(
 
       return ticket;
     },
-    updateStatus: (value: string | string[], input: unknown, actor: Actor) =>
+    updateStatus: (
+      value: string | string[],
+      input: unknown,
+      actor: Actor,
+      sessionId: string,
+    ) =>
       repository.updateStatus(
         ticketId(value),
         visibility(actor),
         ticketStatusInput(input),
         actor.id,
+        sessionId,
       ),
   };
 }

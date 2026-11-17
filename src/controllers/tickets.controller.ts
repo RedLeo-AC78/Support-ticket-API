@@ -23,7 +23,12 @@ export function ticketsController(
 
   const updateStatus: RequestHandler = async (req, res) => {
     res.json(
-      await service.updateStatus(req.params.id, req.body, res.locals.user),
+      await service.updateStatus(
+        req.params.id,
+        req.body,
+        res.locals.user,
+        res.locals.sessionId,
+      ),
     );
   };
 

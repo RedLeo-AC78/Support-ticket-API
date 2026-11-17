@@ -402,6 +402,11 @@ test(
       {},
       "CLOSED",
       users.admin.id,
+      (
+        await db.session.findFirstOrThrow({
+          where: { userId: users.admin.id, revokedAt: null },
+        })
+      ).id,
     );
 
     release();

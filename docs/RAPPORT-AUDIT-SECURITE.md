@@ -336,6 +336,22 @@ J'ai fermé un ticket avec un compte AGENT fictif dans le test local. La modific
 
 ## Bilan provisoire
 
+### Non-régression après l'extension R1 aux tickets
+
+Le 17 novembre 2026, l'élève a exécuté les deux suites après le correctif de révocation sur PATCH /tickets/:id/status : [sortie sans base](audit/preuves/R1-tickets-tests-eleve.txt), 21 succès, 8 scénarios PostgreSQL ignorés volontairement et 0 échec ; [sortie PostgreSQL](audit/preuves/R1-tickets-tests-db-eleve.txt), 8 scénarios exécutés, 8 succès, 0 échec, 0 scénario ignoré. Les diagnostics d'audit de cette dernière suite sont datés autour de 15:04 UTC.
+
+Le scénario R1 confirme de nouveau le refus 403 après désactivation et le ticket maintenu OPEN. Le scénario VULN-003 vérifie simultanément que les modifications légitimes restent autorisées et journalisées, et que la panne du journal annule la modification. Les logs d'erreur interne/email des pannes simulées sont attendus.
+
+Cette exécution clôt la non-régression de ce correctif et remplace les mentions préparatoires « suite de huit scénarios en attente » ci-dessous. Elle ne clôt pas les autres vérifications R1 (notamment les parcours IA et les autres variantes de révocation/expiration). Aucun succès GitHub Actions n'est déduit de ces résultats locaux.
+
+### Reprise de la couverture R1 — opérations de tickets après révocation
+
+Un test supplémentaire est préparé pour PATCH /tickets/:id/status : désactiver un agent après le contrôle initial mais avant la transaction, puis observer le résultat de sa requête déjà en cours. [Préparation et limites](audit/R1-REVOCATION-TICKETS.md). Non exécuté à cette étape, aucun correctif supplémentaire appliqué. La cause suspectée est celle de VULN-001 : si confirmée, cette extension sera rattachée à cette fiche, sans compter artificiellement une nouvelle vulnérabilité indépendante. Le correctif d'invitation reste validé pour les variantes déjà exécutées ; il ne prouve pas la couverture de toutes les autres opérations.
+
+### Inventaire préalable à la prochaine passe
+
+À la demande de l'élève, une revue transversale du code a été réalisée au commit d1f1ccc avant de reprendre les corrections une par une. [Inventaire et estimations du travail restant](audit/INVENTAIRE-RESTANT.md). Il comporte trois groupes de risques à vérifier (couverture de révocation/expiration, disponibilité de logout après quota, exposition réseau/HTTP) et un contrôle des dépendances. **Quatre lots de vérification ne signifient pas quatre failles confirmées.** Les variantes de cause commune seront regroupées, notamment avec VULN-001 si approprié. Aucun nouveau test d'exploitation ni correctif applicatif n'est réalisé par cette étape de planification. Les limites acceptées du projet scolaire sont distinguées des pistes à démontrer. Les durées restent des estimations révisables après preuve.
+
 ### Dernière non-régression après VULN-003
 
 Le 17 novembre 2026, l'élève a exécuté et enregistré les deux suites après le correctif VULN-003 :
@@ -381,3 +397,11 @@ Le fichier LOT8 sert au suivi du travail. Le présent rapport rassemble la fiche
 ## Journal de préparation de la reproduction initiale
 
 Le 17 novembre 2026, une copie isolée du commit ac4bb58 a été extraite par git archive dans work/audit-vuln001-before-ac4bb58. Le test actuel audit-invitations.test.mjs y a été copié. Le dossier work est ignoré par Git ; le projet actif corrigé n'est pas remplacé. Aucun fichier .env réel n'est copié. Après installation et compilation, l'élève a exécuté le scénario le 17 novembre 2026 à 10:34:16 UTC. [Preuve personnelle avant correction](audit/preuves/VULN-001-avant-eleve.txt) : trois créations HTTP 201, trois renvois HTTP 200, un code et un email simulé par variante, et activation/connexion du nouveau Super Admin confirmée. Le test contient 1 succès et 0 échec : en mode vulnerable, cela signifie que l'exploitation attendue est reproduite.
+
+## Mise à jour de portée — VULN-001, extension R1 tickets
+
+Reproduction personnelle le 17 novembre 2026 à 14:35:34 UTC : [preuve brute](audit/preuves/R1-tickets-avant-eleve.txt). Après désactivation de l’agent terminée avant la transaction du ticket, sa session est refusée avec 401 mais la modification déjà en cours réussit avec 200 et ferme le ticket. Une entrée d’audit est créée, ce qui confirme que journalisation et autorisation sont des contrôles distincts. Les six variantes d’invitation restent corrigées ; elles ne couvraient pas cette route de ticket. Cette extension de VULN-001 a ensuite été corrigée et retestée personnellement avec succès. [Explication et correction préparée](audit/R1-REVOCATION-TICKETS.md). Les autres parcours IA et l’expiration administrative du lot R1 restent à examiner ; aucun résultat global n’est affirmé pour eux.
+
+### Résultat personnel R1 tickets après correction
+
+Le 17 novembre 2026 à 14:50:08 UTC, l’élève a rejoué la désactivation pendant une modification de statut : [preuve après correction](audit/preuves/R1-tickets-apres-eleve.txt). La session révoquée obtient 401 ; la modification en cours est refusée avec 403 ; le ticket reste OPEN et aucune trace de modification réussie n’est créée. Un test réussi, zéro échec. La suite PostgreSQL passe à huit scénarios avec ce contrôle ; la non-régression complète après ce correctif reste à exécuter. Cette preuve concerne la variante de désactivation testée, pas tous les parcours sensibles de l’application.

@@ -1,0 +1,10 @@
+Ô£ö R1 : r├®vocation avant modification de statut de ticket (1804.398ms)
+Ôä╣ {"executedAt":"2026-11-17T14:50:08.581Z","mode":"fixed","repositorySha256":"dbb08f42c3c04723aa03ecf2c6dfebb596cc278f9a3984e9297eb112216cf617","revokedAgentMeHttp":401,"pendingOperationHttp":403,"statusBefore":"OPEN","statusAfter":"OPEN","ticketAuditRows":0,"errorCode":"FORBIDDEN"}
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 1
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 2239.6733

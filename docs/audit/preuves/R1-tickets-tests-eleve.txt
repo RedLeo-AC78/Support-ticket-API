@@ -1,0 +1,55 @@
+
+> support-ticket-api@1.0.0 test
+> npm run build && node --test tests/*.test.mjs
+
+
+> support-ticket-api@1.0.0 build
+> npm run generate && tsc
+
+
+> support-ticket-api@1.0.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+Ô£ö Generated Prisma Client (7.10.1) to .\src\generated\prisma in 72ms
+
+´╣ú PostgreSQL : IA, confirmation, visibilit├®, pannes et concurrence (0.9385ms) # SKIP
+Ô£ö IA : v├®rifier le format et borner les r├®ponses du fournisseur (4.3173ms)
+Ô£ö OpenAI : d├®sactiv├® par d├®faut, configuration explicite requise (0.5234ms)
+Ô£ö OpenAI : transport simul├®, seulement titre/description, format structur├®, aucun outil (31.6086ms)
+Ô£ö OpenAI : erreurs, refus, troncature et r├®ponses trop grandes neutralis├®s (4.4365ms)
+Ô£ö OpenAI : quota horaire et parall├®lisme born├®s avant l'appel (7.2865ms)
+Ô£ö IA : les secrets ├®vidents sont orient├®s vers un humain avant tout envoi (0.5593ms)
+Ô£ö HTTP : acc├¿s anonyme et faux JWT refus├®s avant tout acc├¿s DB (123.843ms)
+´╣ú VULN-001 : invitation apr├¿s r├®vocation, interleaving HTTP d├®terministe (1.1034ms) # SKIP
+´╣ú PISTE-002 : quota email consomm├® par des mots de passe invalides (0.879ms) # SKIP
+´╣ú R1 : r├®vocation avant modification de statut de ticket (0.883ms) # SKIP
+´╣ú PISTE-003 : tra├ºabilit├® des changements de statut de ticket (0.8902ms) # SKIP
+´╣ú PostgreSQL : pagination, filtres, audit atomique et changements de r├┤le (1.0891ms) # SKIP
+Ô£ö pagination : valeurs born├®es, doublons et injection dans le tri refus├®s (2.7806ms)
+Ô£ö limiteur : cl├®s ind├®pendantes et expiration de la fen├¬tre (1.2502ms)
+Ô£ö erreur inattendue : aucune fuite de d├®tails (0.8278ms)
+Ô£ö HTTP : erreurs communes, JSON invalide, taille, force brute et limite globale (348.8987ms)
+Ô£ö OpenAPI : toutes les routes m├®tier, r├®f├®rences et authentification d├®crites (0.7919ms)
+Ô£ö JWT : signature, expiration, issuer, audience, algorithme et claims (32.8069ms)
+Ô£ö Brevo : requ├¬te API correcte, sans envoi r├®el (31.8534ms)
+Ô£ö Brevo : erreurs neutralis├®es, configuration v├®rifi├®e (2.4006ms)
+Ô£ö seul SUPER_ADMIN pourra inviter et d├®sactiver les comptes (1.0564ms)
+Ô£ö un agent traite les tickets sans administrer les comptes ; un user reste limit├® (0.1819ms)
+´╣ú PostgreSQL : auth, r├┤les, propri├®t├® et rotation concurrente (0.9852ms) # SKIP
+´╣ú PostgreSQL : d├®sactivation, r├®activation, reset, concurrence et dernier Super Admin (1.1048ms) # SKIP
+Ô£ö scrypt : sel unique, v├®rification et espaces pr├®serv├®s (2049.7653ms)
+Ô£ö validation des identifiants et tokens al├®atoires (1.1779ms)
+Ô£ö service tickets sans Express : propri├®taire impos├® et validation (2.4678ms)
+Ô£ö service tickets sans Express : visibilit├® et ticket absent (0.9667ms)
+Ôä╣ tests 29
+Ôä╣ suites 0
+Ôä╣ pass 21
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 8
+Ôä╣ todo 0
+Ôä╣ duration_ms 2299.0294
